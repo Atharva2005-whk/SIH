@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build:client",
+  "outputDirectory": "client/dist",
+  "installCommand": "npm install",
+  "env": {
+    "NODE_VERSION": "18.20.0",
+    "VITE_API_BASE_URL": "https://your-backend-url.com",
+    "VITE_ENABLE_BLOCKCHAIN": "false"
+  },
+  "routes": [
+    {
+      "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot))",
+      "headers": {
+        "cache-control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
+}
