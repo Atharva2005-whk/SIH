@@ -8,10 +8,13 @@
 
 A comprehensive, **optimized monorepo** blockchain-based system for monitoring tourist safety, managing digital identities, and responding to incidents using AI, Geo-Fencing, and Blockchain technology.
 
-## 🎯 **Recent Optimizations**
+## 🎯 **Recent Optimizations & New Features**
 
 ✅ **Monorepo Architecture** - Unified workspace with shared dependencies  
 ✅ **TypeScript Integration** - Full type safety across all components  
+✅ **Multi-Language Support** - English, Hindi, Spanish, and French with dynamic loading  
+✅ **Dark Mode Theme** - System preference detection with manual toggle  
+✅ **Enhanced Document Upload** - Conditional uploads (Aadhar for Indians, Passport/Visa for foreigners)  
 ✅ **Optimized Dependencies** - Eliminated duplicates and updated versions  
 ✅ **Shared Service Layer** - Reusable blockchain service for frontend and backend  
 ✅ **Standardized Configuration** - Consistent ESLint, Prettier, and TypeScript configs  
@@ -29,12 +32,15 @@ A comprehensive, **optimized monorepo** blockchain-based system for monitoring t
 
 ### Key Features
 
-- ✅ **Digital Identity Management** - Secure tourist registration and verification
+- ✅ **Digital Identity Management** - Secure tourist registration and verification with document upload
+- ✅ **Multi-Language Interface** - Support for English, Hindi, Spanish, and French
+- ✅ **Responsive Design** - Dark/Light mode with system preference detection
 - ✅ **Incident Reporting** - Blockchain-based incident tracking with evidence
 - ✅ **Geo-Fencing** - Real-time location monitoring with safety zones
 - ✅ **Emergency Response** - Automated alert system with response tracking
 - ✅ **Safety Checkpoints** - Authority-managed safety verification points
 - ✅ **Evidence Management** - IPFS-based evidence storage with blockchain verification
+- ✅ **Smart Document Validation** - Conditional document requirements based on nationality
 
 ## 🚀 **Quick Start**
 
@@ -291,7 +297,31 @@ npm run deploy -- --network sepolia
 npm run deploy -- --network polygon
 ```
 
-## 🔐 Security Features
+## 🌍 Multi-Language & Theme Features
+
+### Language Support
+- **4 Languages**: English, Hindi (हिन्दी), Spanish (Español), French (Français)
+- **Dynamic Loading**: Translations loaded on-demand for better performance
+- **Browser Detection**: Automatically detects user's preferred language
+- **Persistent Selection**: Language preference saved to localStorage
+- **Nested Translation Keys**: Organized translation structure for maintainability
+
+### Theme System
+- **Dark/Light Mode**: Full support with smooth transitions
+- **System Preference**: Automatically follows OS theme setting
+- **Manual Toggle**: Users can override system preference
+- **Persistent Storage**: Theme preference saved across sessions
+- **Component-wide**: All UI components support both themes
+
+### Document Upload Features
+- **Smart Validation**: Different document requirements based on nationality
+- **Indian Citizens**: Aadhar card upload with both sides support
+- **Foreign Visitors**: Passport + Visa upload requirement
+- **File Support**: JPG, PNG, PDF files up to 10MB
+- **Preview & Remove**: Users can preview and remove uploaded documents
+- **Drag & Drop**: Intuitive file upload experience
+
+## 🔍 Security Features
 
 - **Access Control**: Role-based permissions for authorities and responders
 - **Data Integrity**: All data stored on blockchain with cryptographic verification
@@ -337,11 +367,13 @@ For support and questions:
 - AI-powered risk assessment
 - Mobile app integration
 - Real-time notifications
-- Multi-language support
 - Advanced analytics dashboard
 - Integration with emergency services
 - IoT device integration
 - Machine learning for predictive safety
+- Voice-based emergency alerts
+- Offline mode capabilities
+- Integration with local tourism boards
 
 ---
 
