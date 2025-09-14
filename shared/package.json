@@ -1,0 +1,39 @@
+{
+  "name": "@sih/shared",
+  "version": "1.0.0",
+  "description": "Shared utilities and types for Smart Tourist Safety System",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rimraf dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": ["shared", "utilities", "types", "blockchain", "tourist-safety"],
+  "author": "SIH Team",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "rimraf": "^6.0.1"
+  },
+  "dependencies": {
+    "ethers": "^6.8.0",
+    "zod": "^3.25.76"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./types": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/types/index.js"
+    },
+    "./utils": {
+      "types": "./dist/utils/index.d.ts",
+      "import": "./dist/utils/index.js"
+    }
+  }
+}

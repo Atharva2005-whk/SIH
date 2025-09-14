@@ -1,0 +1,36 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "jsx": "react-jsx",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "types": ["vite/client", "vitest"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@/components/*": ["./src/components/*"],
+      "@/lib/*": ["./src/lib/*"],
+      "@/hooks/*": ["./src/hooks/*"],
+      "@sih/shared": ["../shared/src"],
+      "@sih/shared/*": ["../shared/src/*"]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "**/*.ts",
+    "**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx"
+  ],
+  "references": [
+    { "path": "../shared" }
+  ]
+}

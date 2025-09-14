@@ -1,0 +1,40 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+
+    /* Path mapping */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./client/src/*"],
+      "@shared/*": ["./shared/src/*"],
+      "@sih/shared": ["./shared/src"],
+      "@sih/shared/*": ["./shared/src/*"]
+    }
+  },
+  "include": ["scripts/**/*", "test/**/*", "hardhat.config.ts"],
+  "references": [
+    { "path": "./shared/tsconfig.json" },
+    { "path": "./backend/tsconfig.json" },
+    { "path": "./client/tsconfig.json" }
+  ]
+}

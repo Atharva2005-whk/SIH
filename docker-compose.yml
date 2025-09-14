@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  # Hardhat blockchain network
+  blockchain:
+    image: node:18-alpine
+    container_name: sih-blockchain
+    working_dir: /app
+    command: npm run node
+    ports:
+      - "8545:8545"
+    volumes:
+      - .:/app
+      - blockchain_data:/app/cache
+    environment:
+      - NODE_ENV=development
+    networks:
+      - sih-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8545"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # API Backend
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: sih-api
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - RPC_URL=http://blockchain:8545
+      - CORS_ORIGIN=http://localhost:5173
+    depends_on:
+      blockchain:
+        condition: service_healthy
+    volumes:
+      - ./deployment-info.json:/app/deployment-info.json:ro
+    networks:
+      - sih-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  # Frontend Client (for production)
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.prod
+    container_name: sih-client
+    ports:
+      - "80:80"
+    environment:
+      - VITE_API_BASE_URL=http://api:3000/api
+      - VITE_CHAIN_ID=1337
+      - VITE_RPC_URL=http://blockchain:8545
+    depends_on:
+      - api
+    networks:
+      - sih-network
+    restart: unless-stopped
+
+volumes:
+  blockchain_data:
+
+networks:
+  sih-network:
+    driver: bridge

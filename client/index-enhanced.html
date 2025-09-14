@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Tourist Safety Monitoring System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+    <meta name="description" content="Blockchain-based Digital ID & Incident Response System for Tourist Safety">
+    <meta name="keywords" content="tourist safety, blockchain, digital ID, incident response, geo-fencing">
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <h1>🛡️ Smart Tourist Safety Monitoring</h1>
+            <p>Blockchain-based Digital ID & Incident Response System</p>
+            <div class="header-stats">
+                <div class="stat-item">
+                    <span class="stat-number" id="headerTourists">-</span>
+                    <span class="stat-label">Tourists</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="headerIncidents">-</span>
+                    <span class="stat-label">Active Incidents</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="headerZones">-</span>
+                    <span class="stat-label">Safety Zones</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Navigation Tabs -->
+            <div class="tabs">
+                <button class="tab active" data-tab="dashboard">
+                    📊 Dashboard
+                </button>
+                <button class="tab" data-tab="tourists">
+                    👥 Tourist Management
+                </button>
+                <button class="tab" data-tab="incidents">
+                    📋 Incident Reporting
+                </button>
+                <button class="tab" data-tab="zones">
+                    🗺️ Safety Zones
+                </button>
+                <button class="tab" data-tab="alerts">
+                    🚨 Safety Alerts
+                </button>
+                <button class="tab" data-tab="analytics">
+                    📈 Analytics
+                </button>
+            </div>
+
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active">
+                <div class="status-card">
+                    <h3><span class="status-indicator status-online"></span>System Status</h3>
+                    <p>All systems operational. Blockchain network connected.</p>
+                </div>
+
+                <div class="grid">
+                    <div class="card">
+                        <h3>📊 Real-time Statistics</h3>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <span class="stat-number" id="totalTourists">-</span>
+                                <span class="stat-label">Total Tourists</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number" id="activeIncidents">-</span>
+                                <span class="stat-label">Active Incidents</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number" id="totalZones">-</span>
+                                <span class="stat-label">Safety Zones</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number" id="totalAlerts">-</span>
+                                <span class="stat-label">Emergency Alerts</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>🗺️ Live Map & Tracking</h3>
+                        <div class="map-container">
+                            <div>
+                                <h4>Interactive Map View</h4>
+                                <p>Real-time tourist location tracking</p>
+                                <p>Safety zone visualization</p>
+                                <p>Incident location mapping</p>
+                                <small style="color: #6c757d;">(Integration with mapping service required)</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>🚨 Recent Alerts & Incidents</h3>
+                        <div id="recentAlerts">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                <p>Loading recent alerts...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>⚡ Quick Actions</h3>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <button class="btn btn-success" onclick="window.touristSafetyApp.showTab('tourists')">
+                                Register New Tourist
+                            </button>
+                            <button class="btn btn-warning" onclick="window.touristSafetyApp.showTab('incidents')">
+                                Report Incident
+                            </button>
+                            <button class="btn btn-danger" onclick="window.touristSafetyApp.showTab('alerts')">
+                                Trigger Emergency Alert
+                            </button>
+                            <button class="btn" onclick="window.touristSafetyApp.showTab('zones')">
+                                Create Safety Zone
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tourist Management Tab -->
+            <div id="tourists" class="tab-content">
+                <div class="grid">
+                    <div class="card">
+                        <h3>👤 Register New Tourist</h3>
+                        <form id="touristForm">
+                            <div class="form-group">
+                                <label for="touristName">Full Name *</label>
+                                <input type="text" id="touristName" required placeholder="Enter full name">
+                            </div>
+                            <div class="form-group">
+                                <label for="passportNumber">Passport Number *</label>
+                                <input type="text" id="passportNumber" required placeholder="Enter passport number">
+                            </div>
+                            <div class="form-group">
+                                <label for="nationality">Nationality *</label>
+                                <input type="text" id="nationality" required placeholder="Enter nationality">
+                            </div>
+                            <div class="form-group">
+                                <label for="emergencyContact">Emergency Contact *</label>
+                                <input type="text" id="emergencyContact" required placeholder="Enter emergency contact">
+                            </div>
+                            <div class="form-group">
+                                <label for="medicalInfo">Medical Information</label>
+                                <textarea id="medicalInfo" rows="3" placeholder="Enter any medical conditions or allergies"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-success">Register Tourist</button>
+                        </form>
+                        <div id="touristResult" style="margin-top: 20px;"></div>
+                    </div>
+
+                    <div class="card">
+                        <h3>📋 Tourist List</h3>
+                        <div id="touristList">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                <p>Loading tourist list...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Incident Reporting Tab -->
+            <div id="incidents" class="tab-content">
+                <div class="grid">
+                    <div class="card">
+                        <h3>📝 Report New Incident</h3>
+                        <form id="incidentForm">
+                            <div class="form-group">
+                                <label for="incidentTouristId">Tourist ID *</label>
+                                <input type="number" id="incidentTouristId" required placeholder="Enter tourist ID">
+                            </div>
+                            <div class="form-group">
+                                <label for="incidentType">Incident Type *</label>
+                                <select id="incidentType" required>
+                                    <option value="">Select incident type</option>
+                                    <option value="theft">Theft</option>
+                                    <option value="medical">Medical Emergency</option>
+                                    <option value="lost">Lost Tourist</option>
+                                    <option value="accident">Accident</option>
+                                    <option value="harassment">Harassment</option>
+                                    <option value="natural_disaster">Natural Disaster</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="incidentDescription">Description *</label>
+                                <textarea id="incidentDescription" rows="4" required placeholder="Provide detailed description of the incident"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="incidentLocation">Location *</label>
+                                <input type="text" id="incidentLocation" required placeholder="Enter incident location">
+                            </div>
+                            <div class="form-group">
+                                <label for="incidentSeverity">Severity *</label>
+                                <select id="incidentSeverity" required>
+                                    <option value="">Select severity</option>
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                    <option value="critical">Critical</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-warning">Report Incident</button>
+                        </form>
+                        <div id="incidentResult" style="margin-top: 20px;"></div>
+                    </div>
+
+                    <div class="card">
+                        <h3>📊 Incident Statistics</h3>
+                        <div id="incidentStats">
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <span class="stat-number">12</span>
+                                    <span class="stat-label">Total Incidents</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number">3</span>
+                                    <span class="stat-label">Active</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number">8</span>
+                                    <span class="stat-label">Resolved</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number">1</span>
+                                    <span class="stat-label">Critical</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Safety Zones Tab -->
+            <div id="zones" class="tab-content">
+                <div class="grid">
+                    <div class="card">
+                        <h3>🗺️ Create Safety Zone</h3>
+                        <form id="zoneForm">
+                            <div class="form-group">
+                                <label for="zoneName">Zone Name *</label>
+                                <input type="text" id="zoneName" required placeholder="Enter zone name">
+                            </div>
+                            <div class="form-group">
+                                <label for="zoneDescription">Description</label>
+                                <textarea id="zoneDescription" rows="3" placeholder="Enter zone description"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="centerLatitude">Center Latitude *</label>
+                                <input type="number" id="centerLatitude" step="0.000001" required placeholder="e.g., 40.7589">
+                            </div>
+                            <div class="form-group">
+                                <label for="centerLongitude">Center Longitude *</label>
+                                <input type="number" id="centerLongitude" step="0.000001" required placeholder="e.g., -73.9851">
+                            </div>
+                            <div class="form-group">
+                                <label for="zoneRadius">Radius (meters) *</label>
+                                <input type="number" id="zoneRadius" required placeholder="Enter radius in meters">
+                            </div>
+                            <div class="form-group">
+                                <label for="zoneType">Zone Type *</label>
+                                <select id="zoneType" required>
+                                    <option value="">Select zone type</option>
+                                    <option value="safe">Safe Zone</option>
+                                    <option value="warning">Warning Zone</option>
+                                    <option value="danger">Danger Zone</option>
+                                    <option value="restricted">Restricted Zone</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-success">Create Zone</button>
+                        </form>
+                        <div id="zoneResult" style="margin-top: 20px;"></div>
+                    </div>
+
+                    <div class="card">
+                        <h3>📍 Active Safety Zones</h3>
+                        <div id="zoneList">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                <p>Loading safety zones...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Safety Alerts Tab -->
+            <div id="alerts" class="tab-content">
+                <div class="grid">
+                    <div class="card">
+                        <h3>🚨 Trigger Safety Alert</h3>
+                        <form id="alertForm">
+                            <div class="form-group">
+                                <label for="alertTouristId">Tourist ID *</label>
+                                <input type="number" id="alertTouristId" required placeholder="Enter tourist ID">
+                            </div>
+                            <div class="form-group">
+                                <label for="alertType">Alert Type *</label>
+                                <select id="alertType" required>
+                                    <option value="">Select alert type</option>
+                                    <option value="emergency">Emergency</option>
+                                    <option value="medical">Medical</option>
+                                    <option value="safety_check">Safety Check</option>
+                                    <option value="zone_breach">Zone Breach</option>
+                                    <option value="missing_person">Missing Person</option>
+                                    <option value="natural_disaster">Natural Disaster</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="alertMessage">Message *</label>
+                                <textarea id="alertMessage" rows="3" required placeholder="Enter alert message"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="alertLocation">Location *</label>
+                                <input type="text" id="alertLocation" required placeholder="Enter alert location">
+                            </div>
+                            <div class="form-group">
+                                <label for="alertSeverity">Severity *</label>
+                                <select id="alertSeverity" required>
+                                    <option value="">Select severity</option>
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                    <option value="critical">Critical</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-danger">Trigger Alert</button>
+                        </form>
+                        <div id="alertResult" style="margin-top: 20px;"></div>
+                    </div>
+
+                    <div class="card">
+                        <h3>📊 Alert Statistics</h3>
+                        <div id="alertStats">
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <span class="stat-number">8</span>
+                                    <span class="stat-label">Total Alerts</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number">2</span>
+                                    <span class="stat-label">Active</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number">5</span>
+                                    <span class="stat-label">Resolved</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number">1</span>
+                                    <span class="stat-label">Critical</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Tab -->
+            <div id="analytics" class="tab-content">
+                <div class="grid">
+                    <div class="card">
+                        <h3>📈 System Analytics</h3>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <span class="stat-number">98.5%</span>
+                                <span class="stat-label">System Uptime</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">2.3s</span>
+                                <span class="stat-label">Avg Response Time</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">156</span>
+                                <span class="stat-label">Total Tourists</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">12</span>
+                                <span class="stat-label">Safety Zones</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>📊 Incident Trends</h3>
+                        <div style="height: 300px; background: #f8f9fa; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #6c757d;">
+                            <div style="text-align: center;">
+                                <h4>Incident Trend Chart</h4>
+                                <p>Visual representation of incident patterns</p>
+                                <small>(Chart integration required)</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>🗺️ Geographic Distribution</h3>
+                        <div style="height: 300px; background: #f8f9fa; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #6c757d;">
+                            <div style="text-align: center;">
+                                <h4>Geographic Heat Map</h4>
+                                <p>Incident and tourist distribution</p>
+                                <small>(Map integration required)</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="app.js"></script>
+    
+    <!-- Service Worker Registration (for PWA capabilities) -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch(registrationError => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>

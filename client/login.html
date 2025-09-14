@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Smart Tourist Safety Monitoring</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+    <style>
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 450px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #3498db, #27ae60, #f39c12, #e74c3c);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h1 {
+            color: #2c3e50;
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+
+        .login-header p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+
+        .role-selector {
+            display: flex;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid #ecf0f1;
+        }
+
+        .role-option {
+            flex: 1;
+            padding: 15px;
+            background: #f8f9fa;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            color: #7f8c8d;
+        }
+
+        .role-option.active {
+            background: #3498db;
+            color: white;
+        }
+
+        .role-option:hover {
+            background: #2980b9;
+            color: white;
+        }
+
+        .login-form {
+            display: none;
+        }
+
+        .login-form.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ecf0f1;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .password-toggle {
+            position: relative;
+        }
+
+        .password-toggle input {
+            padding-right: 50px;
+        }
+
+        .password-toggle-btn {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #7f8c8d;
+            font-size: 1.2em;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.3);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .forgot-password {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .forgot-password a {
+            color: #3498db;
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+
+        .register-link {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #ecf0f1;
+        }
+
+        .register-link a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+
+        .language-selector {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+
+        .language-selector select {
+            padding: 8px 12px;
+            border: 1px solid #ecf0f1;
+            border-radius: 5px;
+            background: white;
+            font-size: 0.9em;
+        }
+
+        .tourist-info {
+            background: #e8f5e8;
+            border: 1px solid #27ae60;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            color: #155724;
+        }
+
+        .authority-info {
+            background: #e3f2fd;
+            border: 1px solid #3498db;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            color: #0d47a1;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid #ecf0f1;
+            border-radius: 50%;
+            border-top-color: #3498db;
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        @media (max-width: 480px) {
+            .login-card {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+            
+            .login-header h1 {
+                font-size: 1.8em;
+            }
+            
+            .role-selector {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <!-- Language Selector -->
+            <div class="language-selector">
+                <select id="languageSelect" onchange="changeLanguage()">
+                    <option value="en">English</option>
+                    <option value="es">Español</option>
+                    <option value="fr">Français</option>
+                    <option value="de">Deutsch</option>
+                    <option value="it">Italiano</option>
+                    <option value="pt">Português</option>
+                    <option value="ru">Русский</option>
+                    <option value="zh">中文</option>
+                    <option value="ja">日本語</option>
+                    <option value="ko">한국어</option>
+                    <option value="ar">العربية</option>
+                    <option value="hi">हिन्दी</option>
+                </select>
+            </div>
+
+            <!-- Header -->
+            <div class="login-header">
+                <h1>🛡️ Tourist Safety</h1>
+                <p id="loginSubtitle">Secure Access Portal</p>
+            </div>
+
+            <!-- Role Selector -->
+            <div class="role-selector">
+                <button class="role-option active" onclick="selectRole('tourist')" data-role="tourist">
+                    <span id="touristRole">Tourist</span>
+                </button>
+                <button class="role-option" onclick="selectRole('authority')" data-role="authority">
+                    <span id="authorityRole">Authority</span>
+                </button>
+            </div>
+
+            <!-- Tourist Login Form -->
+            <form id="touristLoginForm" class="login-form active">
+                <div class="tourist-info">
+                    <strong>🌍 For International Tourists:</strong><br>
+                    <span id="touristInfoText">Use your passport number or tourist ID to access your safety profile and report incidents.</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="touristIdentifier" id="touristIdentifierLabel">Passport Number or Tourist ID *</label>
+                    <input type="text" id="touristIdentifier" required placeholder="Enter passport number or tourist ID">
+                </div>
+
+                <div class="form-group">
+                    <label for="touristPassword" id="touristPasswordLabel">Password *</label>
+                    <div class="password-toggle">
+                        <input type="password" id="touristPassword" required placeholder="Enter your password">
+                        <button type="button" class="password-toggle-btn" onclick="togglePassword('touristPassword')">👁️</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="touristNationality" id="touristNationalityLabel">Nationality</label>
+                    <select id="touristNationality">
+                        <option value="">Select your nationality</option>
+                        <option value="US">United States</option>
+                        <option value="UK">United Kingdom</option>
+                        <option value="CA">Canada</option>
+                        <option value="AU">Australia</option>
+                        <option value="DE">Germany</option>
+                        <option value="FR">France</option>
+                        <option value="IT">Italy</option>
+                        <option value="ES">Spain</option>
+                        <option value="JP">Japan</option>
+                        <option value="KR">South Korea</option>
+                        <option value="CN">China</option>
+                        <option value="IN">India</option>
+                        <option value="BR">Brazil</option>
+                        <option value="MX">Mexico</option>
+                        <option value="AR">Argentina</option>
+                        <option value="RU">Russia</option>
+                        <option value="SA">Saudi Arabia</option>
+                        <option value="AE">UAE</option>
+                        <option value="ZA">South Africa</option>
+                        <option value="NG">Nigeria</option>
+                        <option value="EG">Egypt</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="login-btn" id="touristLoginBtn">
+                    <span id="touristLoginText">Login as Tourist</span>
+                </button>
+
+                <div class="forgot-password">
+                    <a href="#" onclick="showForgotPassword('tourist')" id="touristForgotPassword">Forgot Password?</a>
+                </div>
+            </form>
+
+            <!-- Authority Login Form -->
+            <form id="authorityLoginForm" class="login-form">
+                <div class="authority-info">
+                    <strong>🏛️ For Authorities:</strong><br>
+                    <span id="authorityInfoText">Use your official credentials to access the administrative dashboard and manage tourist safety.</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="authorityEmail" id="authorityEmailLabel">Official Email *</label>
+                    <input type="email" id="authorityEmail" required placeholder="Enter your official email">
+                </div>
+
+                <div class="form-group">
+                    <label for="authorityPassword" id="authorityPasswordLabel">Password *</label>
+                    <div class="password-toggle">
+                        <input type="password" id="authorityPassword" required placeholder="Enter your password">
+                        <button type="button" class="password-toggle-btn" onclick="togglePassword('authorityPassword')">👁️</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="authorityDepartment" id="authorityDepartmentLabel">Department *</label>
+                    <select id="authorityDepartment" required>
+                        <option value="">Select your department</option>
+                        <option value="police">Police Department</option>
+                        <option value="medical">Medical Services</option>
+                        <option value="fire">Fire Department</option>
+                        <option value="immigration">Immigration Services</option>
+                        <option value="tourism">Tourism Board</option>
+                        <option value="emergency">Emergency Services</option>
+                        <option value="security">Security Services</option>
+                        <option value="admin">Administration</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="authorityBadge" id="authorityBadgeLabel">Badge/ID Number</label>
+                    <input type="text" id="authorityBadge" placeholder="Enter your badge or ID number">
+                </div>
+
+                <button type="submit" class="login-btn" id="authorityLoginBtn">
+                    <span id="authorityLoginText">Login as Authority</span>
+                </button>
+
+                <div class="forgot-password">
+                    <a href="#" onclick="showForgotPassword('authority')" id="authorityForgotPassword">Forgot Password?</a>
+                </div>
+            </form>
+
+            <!-- Messages -->
+            <div id="errorMessage" class="error-message"></div>
+            <div id="successMessage" class="success-message"></div>
+
+            <!-- Loading -->
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p id="loadingText">Authenticating...</p>
+            </div>
+
+            <!-- Register Link -->
+            <div class="register-link">
+                <p id="registerText">Don't have an account? <a href="#" onclick="showRegistration()" id="registerLink">Register here</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Language translations
+        const translations = {
+            en: {
+                loginSubtitle: "Secure Access Portal",
+                touristRole: "Tourist",
+                authorityRole: "Authority",
+                touristInfoText: "Use your passport number or tourist ID to access your safety profile and report incidents.",
+                touristIdentifierLabel: "Passport Number or Tourist ID *",
+                touristPasswordLabel: "Password *",
+                touristNationalityLabel: "Nationality",
+                touristLoginText: "Login as Tourist",
+                touristForgotPassword: "Forgot Password?",
+                authorityInfoText: "Use your official credentials to access the administrative dashboard and manage tourist safety.",
+                authorityEmailLabel: "Official Email *",
+                authorityPasswordLabel: "Password *",
+                authorityDepartmentLabel: "Department *",
+                authorityBadgeLabel: "Badge/ID Number",
+                authorityLoginText: "Login as Authority",
+                authorityForgotPassword: "Forgot Password?",
+                registerText: "Don't have an account?",
+                registerLink: "Register here",
+                loadingText: "Authenticating...",
+                errorInvalidCredentials: "Invalid credentials. Please try again.",
+                errorNetworkError: "Network error. Please check your connection.",
+                successLogin: "Login successful! Redirecting...",
+                errorRequiredFields: "Please fill in all required fields."
+            },
+            es: {
+                loginSubtitle: "Portal de Acceso Seguro",
+                touristRole: "Turista",
+                authorityRole: "Autoridad",
+                touristInfoText: "Use su número de pasaporte o ID de turista para acceder a su perfil de seguridad y reportar incidentes.",
+                touristIdentifierLabel: "Número de Pasaporte o ID de Turista *",
+                touristPasswordLabel: "Contraseña *",
+                touristNationalityLabel: "Nacionalidad",
+                touristLoginText: "Iniciar Sesión como Turista",
+                touristForgotPassword: "¿Olvidó su contraseña?",
+                authorityInfoText: "Use sus credenciales oficiales para acceder al panel administrativo y gestionar la seguridad de los turistas.",
+                authorityEmailLabel: "Correo Oficial *",
+                authorityPasswordLabel: "Contraseña *",
+                authorityDepartmentLabel: "Departamento *",
+                authorityBadgeLabel: "Número de Placa/ID",
+                authorityLoginText: "Iniciar Sesión como Autoridad",
+                authorityForgotPassword: "¿Olvidó su contraseña?",
+                registerText: "¿No tiene una cuenta?",
+                registerLink: "Regístrese aquí",
+                loadingText: "Autenticando...",
+                errorInvalidCredentials: "Credenciales inválidas. Por favor, intente de nuevo.",
+                errorNetworkError: "Error de red. Por favor, verifique su conexión.",
+                successLogin: "¡Inicio de sesión exitoso! Redirigiendo...",
+                errorRequiredFields: "Por favor, complete todos los campos requeridos."
+            },
+            fr: {
+                loginSubtitle: "Portail d'Accès Sécurisé",
+                touristRole: "Touriste",
+                authorityRole: "Autorité",
+                touristInfoText: "Utilisez votre numéro de passeport ou ID de touriste pour accéder à votre profil de sécurité et signaler des incidents.",
+                touristIdentifierLabel: "Numéro de Passeport ou ID de Touriste *",
+                touristPasswordLabel: "Mot de Passe *",
+                touristNationalityLabel: "Nationalité",
+                touristLoginText: "Se Connecter en tant que Touriste",
+                touristForgotPassword: "Mot de Passe Oublié?",
+                authorityInfoText: "Utilisez vos identifiants officiels pour accéder au tableau de bord administratif et gérer la sécurité des touristes.",
+                authorityEmailLabel: "Email Officiel *",
+                authorityPasswordLabel: "Mot de Passe *",
+                authorityDepartmentLabel: "Département *",
+                authorityBadgeLabel: "Numéro de Badge/ID",
+                authorityLoginText: "Se Connecter en tant qu'Autorité",
+                authorityForgotPassword: "Mot de Passe Oublié?",
+                registerText: "Vous n'avez pas de compte?",
+                registerLink: "Inscrivez-vous ici",
+                loadingText: "Authentification...",
+                errorInvalidCredentials: "Identifiants invalides. Veuillez réessayer.",
+                errorNetworkError: "Erreur réseau. Veuillez vérifier votre connexion.",
+                successLogin: "Connexion réussie! Redirection...",
+                errorRequiredFields: "Veuillez remplir tous les champs requis."
+            }
+        };
+
+        let currentLanguage = 'en';
+        let currentRole = 'tourist';
+
+        // Initialize the login system
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            loadSavedLanguage();
+        });
+
+        function setupEventListeners() {
+            // Form submissions
+            document.getElementById('touristLoginForm').addEventListener('submit', handleTouristLogin);
+            document.getElementById('authorityLoginForm').addEventListener('submit', handleAuthorityLogin);
+
+            // Enter key handling
+            document.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const activeForm = document.querySelector('.login-form.active');
+                    if (activeForm) {
+                        activeForm.dispatchEvent(new Event('submit'));
+                    }
+                }
+            });
+        }
+
+        function selectRole(role) {
+            currentRole = role;
+            
+            // Update role buttons
+            document.querySelectorAll('.role-option').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-role="${role}"]`).classList.add('active');
+
+            // Show/hide forms
+            document.querySelectorAll('.login-form').forEach(form => {
+                form.classList.remove('active');
+            });
+            document.getElementById(`${role}LoginForm`).classList.add('active');
+
+            // Clear messages
+            clearMessages();
+        }
+
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const button = input.nextElementSibling;
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                button.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                button.textContent = '👁️';
+            }
+        }
+
+        async function handleTouristLogin(e) {
+            e.preventDefault();
+            
+            const identifier = document.getElementById('touristIdentifier').value.trim();
+            const password = document.getElementById('touristPassword').value;
+            const nationality = document.getElementById('touristNationality').value;
+
+            if (!identifier || !password) {
+                showError(translations[currentLanguage].errorRequiredFields);
+                return;
+            }
+
+            showLoading(true);
+            clearMessages();
+
+            try {
+                // Simulate API call
+                const response = await simulateLogin('tourist', {
+                    identifier,
+                    password,
+                    nationality
+                });
+
+                if (response.success) {
+                    showSuccess(translations[currentLanguage].successLogin);
+                    // Store login session
+                    localStorage.setItem('userSession', JSON.stringify({
+                        role: 'tourist',
+                        identifier,
+                        nationality,
+                        loginTime: new Date().toISOString()
+                    }));
+                    
+                    // Redirect to main application
+                    setTimeout(() => {
+                        window.location.href = 'index-enhanced.html';
+                    }, 1500);
+                } else {
+                    showError(response.message || translations[currentLanguage].errorInvalidCredentials);
+                }
+            } catch (error) {
+                showError(translations[currentLanguage].errorNetworkError);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function handleAuthorityLogin(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('authorityEmail').value.trim();
+            const password = document.getElementById('authorityPassword').value;
+            const department = document.getElementById('authorityDepartment').value;
+            const badge = document.getElementById('authorityBadge').value.trim();
+
+            if (!email || !password || !department) {
+                showError(translations[currentLanguage].errorRequiredFields);
+                return;
+            }
+
+            showLoading(true);
+            clearMessages();
+
+            try {
+                // Simulate API call
+                const response = await simulateLogin('authority', {
+                    email,
+                    password,
+                    department,
+                    badge
+                });
+
+                if (response.success) {
+                    showSuccess(translations[currentLanguage].successLogin);
+                    // Store login session
+                    localStorage.setItem('userSession', JSON.stringify({
+                        role: 'authority',
+                        email,
+                        department,
+                        badge,
+                        loginTime: new Date().toISOString()
+                    }));
+                    
+                    // Redirect to main application
+                    setTimeout(() => {
+                        window.location.href = 'index-enhanced.html';
+                    }, 1500);
+                } else {
+                    showError(response.message || translations[currentLanguage].errorInvalidCredentials);
+                }
+            } catch (error) {
+                showError(translations[currentLanguage].errorNetworkError);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Real API login call
+        async function simulateLogin(role, credentials) {
+            try {
+                const endpoint = role === 'tourist' ? '/auth/tourist/login' : '/auth/authority/login';
+                const response = await fetch(`http://localhost:3000/api${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(credentials)
+                });
+
+                const result = await response.json();
+                
+                if (result.success && result.tokens) {
+                    // Store session data
+                    localStorage.setItem('userSession', JSON.stringify(result.user));
+                    localStorage.setItem('sessionId', result.tokens.sessionId);
+                }
+                
+                return result;
+            } catch (error) {
+                console.error('Login API error:', error);
+                return {
+                    success: false,
+                    message: 'Network error. Please try again.'
+                };
+            }
+        }
+
+        function showLoading(show) {
+            const loading = document.getElementById('loading');
+            loading.style.display = show ? 'block' : 'none';
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+        }
+
+        function clearMessages() {
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+
+        function changeLanguage() {
+            const select = document.getElementById('languageSelect');
+            currentLanguage = select.value;
+            
+            // Update all text elements
+            Object.keys(translations[currentLanguage]).forEach(key => {
+                const element = document.getElementById(key);
+                if (element) {
+                    element.textContent = translations[currentLanguage][key];
+                }
+            });
+            
+            // Save language preference
+            localStorage.setItem('preferredLanguage', currentLanguage);
+        }
+
+        function loadSavedLanguage() {
+            const savedLanguage = localStorage.getItem('preferredLanguage');
+            if (savedLanguage && translations[savedLanguage]) {
+                currentLanguage = savedLanguage;
+                document.getElementById('languageSelect').value = savedLanguage;
+                changeLanguage();
+            }
+        }
+
+        function showForgotPassword(role) {
+            alert(`Forgot password functionality for ${role} will be implemented. Please contact support.`);
+        }
+
+        function showRegistration() {
+            window.location.href = 'register.html';
+        }
+
+        // Check if user is already logged in
+        function checkExistingSession() {
+            const session = localStorage.getItem('userSession');
+            if (session) {
+                const userData = JSON.parse(session);
+                const loginTime = new Date(userData.loginTime);
+                const now = new Date();
+                const hoursDiff = (now - loginTime) / (1000 * 60 * 60);
+                
+                // If logged in within last 24 hours, redirect to main app
+                if (hoursDiff < 24) {
+                    window.location.href = 'index-enhanced.html';
+                } else {
+                    // Clear expired session
+                    localStorage.removeItem('userSession');
+                }
+            }
+        }
+
+        // Check session on page load
+        checkExistingSession();
+    </script>
+</body>
+</html>

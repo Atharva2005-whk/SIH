@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Smart Tourist Safety Monitoring</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+    <style>
+        .register-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+
+        .register-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .register-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #3498db, #27ae60, #f39c12, #e74c3c);
+        }
+
+        .register-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .register-header h1 {
+            color: #2c3e50;
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+
+        .register-header p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+
+        .role-selector {
+            display: flex;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid #ecf0f1;
+        }
+
+        .role-option {
+            flex: 1;
+            padding: 15px;
+            background: #f8f9fa;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            color: #7f8c8d;
+        }
+
+        .role-option.active {
+            background: #3498db;
+            color: white;
+        }
+
+        .role-option:hover {
+            background: #2980b9;
+            color: white;
+        }
+
+        .register-form {
+            display: none;
+        }
+
+        .register-form.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ecf0f1;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .password-toggle {
+            position: relative;
+        }
+
+        .password-toggle input {
+            padding-right: 50px;
+        }
+
+        .password-toggle-btn {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #7f8c8d;
+            font-size: 1.2em;
+        }
+
+        .register-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .register-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(39, 174, 96, 0.3);
+        }
+
+        .register-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .login-link {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #ecf0f1;
+        }
+
+        .login-link a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: none;
+            border: none;
+            color: #7f8c8d;
+            font-size: 1.5em;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .back-btn:hover {
+            color: #3498db;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid #ecf0f1;
+            border-radius: 50%;
+            border-top-color: #3498db;
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .tourist-info {
+            background: #e8f5e8;
+            border: 1px solid #27ae60;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            color: #155724;
+        }
+
+        .authority-info {
+            background: #e3f2fd;
+            border: 1px solid #3498db;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            color: #0d47a1;
+        }
+
+        @media (max-width: 480px) {
+            .register-card {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+            
+            .register-header h1 {
+                font-size: 1.8em;
+            }
+            
+            .role-selector {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="register-card">
+            <!-- Back Button -->
+            <button class="back-btn" onclick="goBack()">←</button>
+
+            <!-- Header -->
+            <div class="register-header">
+                <h1>🛡️ Create Account</h1>
+                <p>Join the Smart Tourist Safety Network</p>
+            </div>
+
+            <!-- Role Selector -->
+            <div class="role-selector">
+                <button class="role-option active" onclick="selectRole('tourist')" data-role="tourist">
+                    Tourist Registration
+                </button>
+                <button class="role-option" onclick="selectRole('authority')" data-role="authority">
+                    Authority Registration
+                </button>
+            </div>
+
+            <!-- Tourist Registration Form -->
+            <form id="touristRegisterForm" class="register-form active">
+                <div class="tourist-info">
+                    <strong>🌍 For International Tourists:</strong><br>
+                    Create your digital safety profile to access emergency services and report incidents during your travels.
+                </div>
+
+                <div class="form-group">
+                    <label for="touristName">Full Name *</label>
+                    <input type="text" id="touristName" required placeholder="Enter your full name">
+                </div>
+
+                <div class="form-group">
+                    <label for="touristPassport">Passport Number *</label>
+                    <input type="text" id="touristPassport" required placeholder="Enter your passport number">
+                </div>
+
+                <div class="form-group">
+                    <label for="touristNationality">Nationality *</label>
+                    <select id="touristNationality" required>
+                        <option value="">Select your nationality</option>
+                        <option value="US">United States</option>
+                        <option value="UK">United Kingdom</option>
+                        <option value="CA">Canada</option>
+                        <option value="AU">Australia</option>
+                        <option value="DE">Germany</option>
+                        <option value="FR">France</option>
+                        <option value="IT">Italy</option>
+                        <option value="ES">Spain</option>
+                        <option value="JP">Japan</option>
+                        <option value="KR">South Korea</option>
+                        <option value="CN">China</option>
+                        <option value="IN">India</option>
+                        <option value="BR">Brazil</option>
+                        <option value="MX">Mexico</option>
+                        <option value="AR">Argentina</option>
+                        <option value="RU">Russia</option>
+                        <option value="SA">Saudi Arabia</option>
+                        <option value="AE">UAE</option>
+                        <option value="ZA">South Africa</option>
+                        <option value="NG">Nigeria</option>
+                        <option value="EG">Egypt</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="touristEmergencyContact">Emergency Contact *</label>
+                    <input type="text" id="touristEmergencyContact" required placeholder="Enter emergency contact number">
+                </div>
+
+                <div class="form-group">
+                    <label for="touristMedicalInfo">Medical Information</label>
+                    <textarea id="touristMedicalInfo" rows="3" placeholder="Enter any medical conditions, allergies, or medications"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="touristPassword">Password *</label>
+                    <div class="password-toggle">
+                        <input type="password" id="touristPassword" required placeholder="Create a secure password">
+                        <button type="button" class="password-toggle-btn" onclick="togglePassword('touristPassword')">👁️</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="touristConfirmPassword">Confirm Password *</label>
+                    <div class="password-toggle">
+                        <input type="password" id="touristConfirmPassword" required placeholder="Confirm your password">
+                        <button type="button" class="password-toggle-btn" onclick="togglePassword('touristConfirmPassword')">👁️</button>
+                    </div>
+                </div>
+
+                <button type="submit" class="register-btn">Create Tourist Account</button>
+            </form>
+
+            <!-- Authority Registration Form -->
+            <form id="authorityRegisterForm" class="register-form">
+                <div class="authority-info">
+                    <strong>🏛️ For Authorities:</strong><br>
+                    Register your official credentials to access the administrative dashboard and manage tourist safety operations.
+                </div>
+
+                <div class="form-group">
+                    <label for="authorityName">Full Name *</label>
+                    <input type="text" id="authorityName" required placeholder="Enter your full name">
+                </div>
+
+                <div class="form-group">
+                    <label for="authorityEmail">Official Email *</label>
+                    <input type="email" id="authorityEmail" required placeholder="Enter your official email">
+                </div>
+
+                <div class="form-group">
+                    <label for="authorityDepartment">Department *</label>
+                    <select id="authorityDepartment" required>
+                        <option value="">Select your department</option>
+                        <option value="police">Police Department</option>
+                        <option value="medical">Medical Services</option>
+                        <option value="fire">Fire Department</option>
+                        <option value="immigration">Immigration Services</option>
+                        <option value="tourism">Tourism Board</option>
+                        <option value="emergency">Emergency Services</option>
+                        <option value="security">Security Services</option>
+                        <option value="admin">Administration</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="authorityBadge">Badge/ID Number</label>
+                    <input type="text" id="authorityBadge" placeholder="Enter your badge or ID number">
+                </div>
+
+                <div class="form-group">
+                    <label for="authorityPassword">Password *</label>
+                    <div class="password-toggle">
+                        <input type="password" id="authorityPassword" required placeholder="Create a secure password">
+                        <button type="button" class="password-toggle-btn" onclick="togglePassword('authorityPassword')">👁️</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="authorityConfirmPassword">Confirm Password *</label>
+                    <div class="password-toggle">
+                        <input type="password" id="authorityConfirmPassword" required placeholder="Confirm your password">
+                        <button type="button" class="password-toggle-btn" onclick="togglePassword('authorityConfirmPassword')">👁️</button>
+                    </div>
+                </div>
+
+                <button type="submit" class="register-btn">Create Authority Account</button>
+            </form>
+
+            <!-- Messages -->
+            <div id="errorMessage" class="error-message"></div>
+            <div id="successMessage" class="success-message"></div>
+
+            <!-- Loading -->
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Creating account...</p>
+            </div>
+
+            <!-- Login Link -->
+            <div class="login-link">
+                <p>Already have an account? <a href="login.html">Login here</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentRole = 'tourist';
+
+        // Initialize the registration system
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            // Form submissions
+            document.getElementById('touristRegisterForm').addEventListener('submit', handleTouristRegistration);
+            document.getElementById('authorityRegisterForm').addEventListener('submit', handleAuthorityRegistration);
+
+            // Password confirmation validation
+            document.getElementById('touristConfirmPassword').addEventListener('input', validatePasswordMatch);
+            document.getElementById('authorityConfirmPassword').addEventListener('input', validatePasswordMatch);
+        }
+
+        function selectRole(role) {
+            currentRole = role;
+            
+            // Update role buttons
+            document.querySelectorAll('.role-option').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-role="${role}"]`).classList.add('active');
+
+            // Show/hide forms
+            document.querySelectorAll('.register-form').forEach(form => {
+                form.classList.remove('active');
+            });
+            document.getElementById(`${role}RegisterForm`).classList.add('active');
+
+            // Clear messages
+            clearMessages();
+        }
+
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const button = input.nextElementSibling;
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                button.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                button.textContent = '👁️';
+            }
+        }
+
+        function validatePasswordMatch() {
+            const passwordField = currentRole === 'tourist' ? 'touristPassword' : 'authorityPassword';
+            const confirmField = currentRole === 'tourist' ? 'touristConfirmPassword' : 'authorityConfirmPassword';
+            
+            const password = document.getElementById(passwordField).value;
+            const confirmPassword = document.getElementById(confirmField).value;
+            
+            if (confirmPassword && password !== confirmPassword) {
+                document.getElementById(confirmField).style.borderColor = '#e74c3c';
+                return false;
+            } else {
+                document.getElementById(confirmField).style.borderColor = '';
+                return true;
+            }
+        }
+
+        async function handleTouristRegistration(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('touristName').value.trim();
+            const passportNumber = document.getElementById('touristPassport').value.trim();
+            const nationality = document.getElementById('touristNationality').value;
+            const emergencyContact = document.getElementById('touristEmergencyContact').value.trim();
+            const medicalInfo = document.getElementById('touristMedicalInfo').value.trim();
+            const password = document.getElementById('touristPassword').value;
+            const confirmPassword = document.getElementById('touristConfirmPassword').value;
+
+            if (!name || !passportNumber || !nationality || !emergencyContact || !password) {
+                showError('Please fill in all required fields.');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showError('Passwords do not match.');
+                return;
+            }
+
+            if (password.length < 6) {
+                showError('Password must be at least 6 characters long.');
+                return;
+            }
+
+            showLoading(true);
+            clearMessages();
+
+            try {
+                const response = await fetch('http://localhost:3000/api/auth/tourist/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name,
+                        passportNumber,
+                        nationality,
+                        emergencyContact,
+                        medicalInfo,
+                        password
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showSuccess('Account created successfully! Redirecting to login...');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                } else {
+                    showError(result.error || 'Registration failed. Please try again.');
+                }
+            } catch (error) {
+                showError('Network error. Please check your connection and try again.');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function handleAuthorityRegistration(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('authorityName').value.trim();
+            const email = document.getElementById('authorityEmail').value.trim();
+            const department = document.getElementById('authorityDepartment').value;
+            const badge = document.getElementById('authorityBadge').value.trim();
+            const password = document.getElementById('authorityPassword').value;
+            const confirmPassword = document.getElementById('authorityConfirmPassword').value;
+
+            if (!name || !email || !department || !password) {
+                showError('Please fill in all required fields.');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showError('Passwords do not match.');
+                return;
+            }
+
+            if (password.length < 6) {
+                showError('Password must be at least 6 characters long.');
+                return;
+            }
+
+            showLoading(true);
+            clearMessages();
+
+            try {
+                const response = await fetch('http://localhost:3000/api/auth/authority/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name,
+                        email,
+                        department,
+                        badge,
+                        password
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showSuccess('Account created successfully! Redirecting to login...');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                } else {
+                    showError(result.error || 'Registration failed. Please try again.');
+                }
+            } catch (error) {
+                showError('Network error. Please check your connection and try again.');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function showLoading(show) {
+            const loading = document.getElementById('loading');
+            loading.style.display = show ? 'block' : 'none';
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+        }
+
+        function clearMessages() {
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+    </script>
+</body>
+</html>
