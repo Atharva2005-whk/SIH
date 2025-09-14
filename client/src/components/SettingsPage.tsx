@@ -17,10 +17,10 @@ import {
   MapPin
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import { useLanguage, LANGUAGES, SupportedLanguage } from '../contexts/LanguageContext';
 
 // Local type definitions
 type Theme = 'light' | 'dark' | 'system';
-type Language = 'en' | 'es' | 'fr' | 'de' | 'zh' | 'ja';
 
 interface NotificationPreference {
   type: string;
@@ -40,7 +40,6 @@ interface EmergencyContact {
 
 interface UserSettings {
   theme: Theme;
-  language: Language;
   notificationPreferences: NotificationPreference[];
   privacySettings: {
     shareLocationWithAuthorities: boolean;
@@ -60,14 +59,7 @@ interface UserSettings {
   emergencyContacts: EmergencyContact[];
 }
 
-const LANGUAGE_LABELS: Record<Language, string> = {
-  en: 'English',
-  es: 'Español',
-  fr: 'Français',
-  de: 'Deutsch',
-  zh: '中文',
-  ja: '日本語',
-};
+// Use LANGUAGES from LanguageContext instead of local definition
 
 const NOTIFICATION_TYPE_LABELS: Record<string, string> = {
   emergency: 'Emergency Alerts',
@@ -97,12 +89,14 @@ export function SettingsPage({
   onRemoveEmergencyContact,
 }: SettingsPageProps) {
   const { theme, setTheme, resolvedTheme } = useTheme();
+  const { currentLanguage, setLanguage: setContextLanguage, t } = useLanguage();
   const [activeTab, setActiveTab] = useState('appearance');
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
   
-  // Form states
-  const [language, setLanguage] = useState<Language>(userSettings?.language || 'en');
+  // Form states - use LanguageContext for language state
+  const language = currentLanguage;
+  const setLanguage = setContextLanguage;
   const [notifications, setNotifications] = useState<NotificationPreference[]>(
     userSettings?.notificationPreferences || DEFAULT_NOTIFICATION_PREFERENCES
   );
@@ -139,12 +133,14 @@ export function SettingsPage({
     try {
       await onSaveSettings({
         theme,
-        language,
         notificationPreferences: notifications,
         privacySettings,
         accessibilitySettings,
         emergencyContacts,
       });
+      
+      // Language is handled separately by LanguageContext
+      // No need to save it here as it's already persisted
       setSaveStatus('success');
       setTimeout(() => setSaveStatus('idle'), 2000);
     } catch (error) {
@@ -300,12 +296,12 @@ export function SettingsPage({
                     </label>
                     <select
                       value={language}
-                      onChange={(e) => setLanguage(e.target.value as Language)}
+                      onChange={(e) => setLanguage(e.target.value as SupportedLanguage)}
                       className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     >
-                      {Object.entries(LANGUAGE_LABELS).map(([code, label]) => (
+                      {Object.entries(LANGUAGES).map(([code, config]) => (
                         <option key={code} value={code}>
-                          {label}
+                          {config.nativeName}
                         </option>
                       ))}
                     </select>

@@ -29,6 +29,7 @@ import {
 import { UserSafetyMap } from './UserSafetyMap';
 import { AIAssistant } from './AIAssistant';
 import { Rewards } from './Rewards';
+import { SettingsPage } from './SettingsPage';
 import { useLanguage, LANGUAGES, type SupportedLanguage } from '../contexts/LanguageContext';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -862,16 +863,37 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
 
             {activeTab === 'settings' && (
               <div className="space-y-6">
-                {/* Profile Settings */}
-                <div className={`rounded-3xl shadow-xl p-6 transition-colors duration-200 ${
-                  isDark ? 'bg-gray-800' : 'bg-white'
-                }`}>
-                  <h4 className={`text-xl font-semibold mb-6 flex items-center ${
-                    isDark ? 'text-gray-100' : 'text-gray-900'
-                  }`}>
-                    <User className="h-6 w-6 text-blue-600 mr-2" />
-                    {t('settings.profileSettings')}
-                  </h4>
+                <SettingsPage
+                  userSettings={{
+                    theme,
+                    notificationPreferences: [
+                      { type: 'emergency', enabled: settings.notifications.emergencyAlerts, methods: ['push', 'sms'] },
+                      { type: 'location', enabled: settings.notifications.locationUpdates, methods: ['push'] },
+                      { type: 'safety', enabled: settings.notifications.safetyReminders, methods: ['push'] },
+                    ],
+                    privacySettings: {
+                      shareLocationWithAuthorities: settings.privacy.locationSharing,
+                      shareLocationWithEmergencyServices: true,
+                      allowLocationTracking: true,
+                      shareProfileWithOtherTourists: settings.privacy.profileVisibility !== 'private',
+                      allowDataAnalytics: settings.privacy.dataCollection,
+                      allowMarketingCommunications: false,
+                    },
+                    accessibilitySettings: {
+                      fontSize: 'medium' as const,
+                      highContrast: false,
+                      reduceMotion: false,
+                      screenReader: false,
+                      keyboardNavigation: false,
+                    },
+                    emergencyContacts: [],
+                  }}
+                  onSaveSettings={async (newSettings) => {
+                    // Update local settings state
+                    console.log('Saving settings:', newSettings);
+                    // Here you would typically save to backend
+                  }}
+                />
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
