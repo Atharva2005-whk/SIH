@@ -92,7 +92,7 @@ export function TouristRegistration({
   const validateCurrentStep = (): boolean => {
     switch (currentStep) {
       case 0: // Personal Info
-        return !!(formData.name && formData.nationality && formData.passportNumber);
+        return !!(formData.name && formData.nationality);
       case 1: // Contact Info
         return !!formData.emergencyContact;
       case 2: // Document Upload
@@ -162,7 +162,7 @@ export function TouristRegistration({
                 Personal Information
               </h3>
               <p className="text-sm text-gray-600 mb-6">
-                Please provide your basic information for tourist registration.
+                Please provide your basic information. Document verification will be done in the next step.
               </p>
             </div>
 
@@ -203,18 +203,6 @@ export function TouristRegistration({
                 </select>
               </div>
 
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {formData.nationality === 'Indian' ? 'Aadhaar Number' : 'Passport Number'} <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.passportNumber}
-                  onChange={(e) => handleInputChange('passportNumber', e.target.value)}
-                  className="w-full px-4 py-4 border border-gray-300 rounded-2xl shadow-sm bg-gray-50 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:bg-white transition-all duration-200"
-                  placeholder={formData.nationality === 'Indian' ? 'Enter your Aadhaar number' : 'Enter your passport number'}
-                />
-              </div>
             </div>
 
             {/* Document Requirements Info */}

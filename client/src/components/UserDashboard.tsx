@@ -3,40 +3,34 @@ import {
   User, 
   Shield, 
   MapPin, 
-  FileText, 
   AlertTriangle, 
   Phone, 
   Heart, 
-  Calendar,
-  CheckCircle,
-  Clock,
-  XCircle,
-  Upload,
-  Camera,
   Map,
   Bell,
   Navigation,
   Compass,
   RefreshCw,
-  Wifi,
-  WifiOff,
   Settings,
   Zap,
   Volume2,
   Vibrate,
-  Globe,
   Lock,
   Eye,
-  Smartphone,
   HelpCircle,
   Info,
-  LogOut,
   MessageCircle,
-  Gift
+  Gift,
+  XCircle,
+  Clock,
+  CheckCircle,
+  FileText
 } from 'lucide-react';
 import { UserSafetyMap } from './UserSafetyMap';
 import { AIAssistant } from './AIAssistant';
 import { Rewards } from './Rewards';
+import { useLanguage, LANGUAGES, type SupportedLanguage } from '../contexts/LanguageContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface UserDashboardProps {
   user: {
@@ -51,6 +45,8 @@ interface UserDashboardProps {
 }
 
 export function UserDashboard({ user, onLogout }: UserDashboardProps) {
+  const { t, currentLanguage, setLanguage } = useLanguage();
+  const { theme, setTheme, resolvedTheme, isDark } = useTheme();
   const [activeTab, setActiveTab] = useState('overview');
   const [currentLocation, setCurrentLocation] = useState<{lat: number; lng: number} | null>(null);
   const [locationHistory, setLocationHistory] = useState<Array<{lat: number; lng: number; timestamp: Date; address?: string}>>([]);
@@ -79,11 +75,6 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
       autoSendLocation: true,
       emergencyContacts: ['Family', 'Local Police'],
       sosCountdown: 5 // seconds
-    },
-    display: {
-      theme: 'light',
-      language: 'English',
-      fontSize: 'medium'
     }
   });
 
@@ -91,65 +82,7 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
   useEffect(() => {
     getCurrentLocation();
   }, []);
-  
-  // Document state with upload functionality
-  const [documents, setDocuments] = useState(() => {
-    // Determine user type
-    const isIndian = user.nationality?.toLowerCase() === 'indian' || user.nationality?.toLowerCase() === 'india';
-    
-    if (isIndian) {
-      // For Indian citizens, show only Aadhar Card
-      return [
-        { id: 1, type: 'Aadhar Card', status: 'pending', uploadedAt: null, requiredFor: 'indian', file: null }
-      ];
-    } else {
-      // For foreign tourists, show Passport and Visa
-      return [
-        { id: 1, type: 'Passport', status: 'pending', uploadedAt: null, requiredFor: 'foreign', file: null },
-        { id: 2, type: 'Visa', status: 'pending', uploadedAt: null, requiredFor: 'foreign', file: null }
-      ];
-    }
-  });
 
-  // Upload state
-  const [uploadingDocId, setUploadingDocId] = useState<number | null>(null);
-  const [showUploadModal, setShowUploadModal] = useState(false);
-  const [selectedDocType, setSelectedDocType] = useState<string>('');
-
-  // Handle file upload
-  const handleFileUpload = (docId: number, file: File) => {
-    setUploadingDocId(docId);
-    
-    // Simulate upload process
-    setTimeout(() => {
-      setDocuments(prev => prev.map(doc => 
-        doc.id === docId 
-          ? { 
-              ...doc, 
-              status: 'pending', 
-              uploadedAt: new Date().toLocaleDateString(), 
-              file 
-            } 
-          : doc
-      ));
-      setUploadingDocId(null);
-      setShowUploadModal(false);
-      
-      // Simulate verification after upload
-      setTimeout(() => {
-        setDocuments(prev => prev.map(doc => 
-          doc.id === docId 
-            ? { ...doc, status: 'verified' } 
-            : doc
-        ));
-      }, 3000);
-    }, 2000);
-  };
-
-  const openUploadModal = (docType: string) => {
-    setSelectedDocType(docType);
-    setShowUploadModal(true);
-  };
 
   const [emergencyContacts] = useState([
     { id: 1, name: 'Emergency Contact', phone: '+91-9876543210', relation: 'Family' },
@@ -345,7 +278,7 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
     setSosCountdown(0);
   };
   
-  const updateSettings = (category: string, key: string, value: any) => {
+  const updateSettings = (category: keyof typeof settings, key: string, value: any) => {
     setSettings(prev => ({
       ...prev,
       [category]: {
@@ -380,22 +313,42 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className={`min-h-screen transition-colors duration-200 ${
+      isDark 
+        ? 'bg-gradient-to-br from-gray-900 to-gray-800' 
+        : 'bg-gradient-to-br from-gray-50 to-gray-100'
+    }`}>
       {/* Header */}
-      <div className="bg-white shadow-lg border-b border-gray-200">
+      <div className={`shadow-lg border-b transition-colors duration-200 ${
+        isDark 
+          ? 'bg-gray-800 border-gray-700' 
+          : 'bg-white border-gray-200'
+      }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <div className="bg-purple-100 p-2 rounded-2xl mr-3">
+              <div className={`p-2 rounded-2xl mr-3 ${
+                isDark ? 'bg-purple-900/50' : 'bg-purple-100'
+              }`}>
                 <Shield className="h-6 w-6 text-purple-600" />
               </div>
-              <h1 className="text-xl font-bold text-gray-900">SafeSphere Tourist</h1>
+              <h1 className={`text-xl font-bold ${
+                isDark ? 'text-white' : 'text-gray-900'
+              }`}>
+                {t('dashboard.title')}
+              </h1>
             </div>
             
             <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2 bg-gray-100 px-4 py-2 rounded-2xl">
-                <User className="h-5 w-5 text-gray-500" />
-                <span className="text-sm text-gray-700 font-medium">{user.name}</span>
+              <div className={`flex items-center space-x-2 px-4 py-2 rounded-2xl ${
+                isDark ? 'bg-gray-700' : 'bg-gray-100'
+              }`}>
+                <User className={`h-5 w-5 ${
+                  isDark ? 'text-gray-400' : 'text-gray-500'
+                }`} />
+                <span className={`text-sm font-medium ${
+                  isDark ? 'text-gray-200' : 'text-gray-700'
+                }`}>{user.name}</span>
               </div>
               <button
                 onClick={onLogout}
@@ -412,51 +365,62 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900">Welcome back, {user.name}!</h2>
-          <p className="text-gray-600 mt-1">Stay safe and enjoy your journey</p>
+          <h2 className={`text-2xl font-bold ${
+            isDark ? 'text-white' : 'text-gray-900'
+          }`}>
+            {t('dashboard.welcomeBack', { name: user.name })}
+          </h2>
+          <p className={`mt-1 ${
+            isDark ? 'text-gray-300' : 'text-gray-600'
+          }`}>
+            {t('dashboard.staySafe')}
+          </p>
         </div>
 
         {/* Safety Status Card */}
         <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-3xl p-8 text-white mb-8 shadow-2xl">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-xl font-semibold mb-3">Current Safety Status</h3>
+              <h3 className="text-xl font-semibold mb-3">{t('dashboard.currentSafetyStatus')}</h3>
               <div className="flex items-center">
                 <div className="bg-white/20 p-2 rounded-2xl mr-3">
                   <Shield className="h-6 w-6" />
                 </div>
-                <span className="text-2xl font-bold">SAFE ZONE</span>
+                <span className="text-2xl font-bold">{t('dashboard.safeZone')}</span>
               </div>
-              <p className="mt-3 opacity-90 text-lg">You are currently in a monitored safe area</p>
+              <p className="mt-3 opacity-90 text-lg">{t('dashboard.safeZoneDescription')}</p>
             </div>
             <div className="text-right bg-white/10 p-4 rounded-2xl">
-              <div className="text-sm opacity-75">Last Updated</div>
+              <div className="text-sm opacity-75">{t('dashboard.lastUpdated')}</div>
               <div className="font-semibold text-lg">{new Date().toLocaleTimeString()}</div>
             </div>
           </div>
         </div>
 
         {/* Tab Navigation */}
-        <div className="bg-white rounded-3xl shadow-xl mb-8 overflow-hidden">
-          <div className="border-b border-gray-100">
+        <div className={`rounded-3xl shadow-xl mb-8 overflow-hidden transition-colors duration-200 ${
+          isDark ? 'bg-gray-800' : 'bg-white'
+        }`}>
+          <div className={`border-b transition-colors duration-200 ${
+            isDark ? 'border-gray-700' : 'border-gray-100'
+          }`}>
             <nav className="flex space-x-2 px-6 py-2 overflow-x-auto">
               {[
-                { id: 'overview', label: 'Overview', icon: User },
-                { id: 'rewards', label: 'Rewards', icon: Gift },
-                { id: 'assistant', label: 'AI Assistant', icon: MessageCircle },
-                { id: 'documents', label: 'Documents', icon: FileText },
-                { id: 'map', label: 'Safety Map', icon: Map },
-                { id: 'emergency', label: 'Emergency', icon: Phone },
-                { id: 'location', label: 'Location', icon: MapPin },
-                { id: 'settings', label: 'Settings', icon: Settings }
+                { id: 'overview', label: t('navigation.overview'), icon: User },
+                { id: 'rewards', label: t('navigation.rewards'), icon: Gift },
+                { id: 'assistant', label: t('navigation.assistant'), icon: MessageCircle },
+                { id: 'map', label: t('navigation.map'), icon: Map },
+                { id: 'emergency', label: t('navigation.emergency'), icon: Phone },
+                { id: 'location', label: t('navigation.location'), icon: MapPin },
+                { id: 'settings', label: t('navigation.settings'), icon: Settings }
               ].map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center py-3 px-4 rounded-2xl font-medium text-sm transition-all duration-200 ${
                     activeTab === tab.id
-                      ? 'bg-purple-100 text-purple-700 shadow-md'
-                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                      ? `${isDark ? 'bg-purple-900/50 text-purple-300' : 'bg-purple-100 text-purple-700'} shadow-md`
+                      : `${isDark ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-700' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`
                   }`}
                 >
                   <tab.icon className="h-5 w-5 mr-2" />
@@ -472,42 +436,60 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
               <div className="space-y-6">
                 {/* Profile Overview */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6 border border-blue-200">
+                  <div className={`rounded-2xl p-6 border transition-colors duration-200 ${
+                    isDark 
+                      ? 'bg-gradient-to-br from-blue-900/20 to-blue-800/20 border-blue-700/30' 
+                      : 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200'
+                  }`}>
                     <div className="flex items-center">
                       <div className="bg-blue-600 p-2 rounded-2xl mr-4">
                         <User className="h-6 w-6 text-white" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-900 text-lg">Profile Status</h4>
+                        <h4 className={`font-semibold text-lg ${
+                          isDark ? 'text-gray-100' : 'text-gray-900'
+                        }`}>{t('dashboard.profileStatus')}</h4>
                         <p className={`text-sm font-medium ${user.isVerified ? 'text-green-600' : 'text-yellow-600'}`}>
-                          {user.isVerified ? '✓ Verified' : '⏳ Pending Verification'}
+                          {user.isVerified ? t('dashboard.verified') : t('dashboard.pendingVerification')}
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-6 border border-green-200">
+                  <div className={`rounded-2xl p-6 border transition-colors duration-200 ${
+                    isDark 
+                      ? 'bg-gradient-to-br from-green-900/20 to-green-800/20 border-green-700/30' 
+                      : 'bg-gradient-to-br from-green-50 to-green-100 border-green-200'
+                  }`}>
                     <div className="flex items-center">
                       <div className="bg-green-600 p-2 rounded-2xl mr-4">
-                        <FileText className="h-6 w-6 text-white" />
+                        <MapPin className="h-6 w-6 text-white" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-900 text-lg">Documents</h4>
+                        <h4 className={`font-semibold text-lg ${
+                          isDark ? 'text-gray-100' : 'text-gray-900'
+                        }`}>{t('dashboard.locationTracking')}</h4>
                         <p className="text-sm font-medium text-green-600">
-                          {documents.filter(d => d.status === 'verified').length} of {documents.length} verified
+                          {currentLocation ? t('dashboard.active') : t('dashboard.inactive')}
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-6 border border-purple-200">
+                  <div className={`rounded-2xl p-6 border transition-colors duration-200 ${
+                    isDark 
+                      ? 'bg-gradient-to-br from-purple-900/20 to-purple-800/20 border-purple-700/30' 
+                      : 'bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200'
+                  }`}>
                     <div className="flex items-center">
                       <div className="bg-purple-600 p-2 rounded-2xl mr-4">
                         <Shield className="h-6 w-6 text-white" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-900 text-lg">Safety Score</h4>
-                        <p className="text-sm font-medium text-purple-600">Excellent (95%)</p>
+                        <h4 className={`font-semibold text-lg ${
+                          isDark ? 'text-gray-100' : 'text-gray-900'
+                        }`}>{t('dashboard.safetyScore')}</h4>
+                        <p className="text-sm font-medium text-purple-600">{t('dashboard.excellent')}</p>
                       </div>
                     </div>
                   </div>
@@ -515,16 +497,28 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
 
                 {/* Recent Activity */}
                 <div>
-                  <h4 className="text-xl font-semibold text-gray-900 mb-6">Recent Activity</h4>
+                  <h4 className={`text-xl font-semibold mb-6 ${
+                    isDark ? 'text-gray-100' : 'text-gray-900'
+                  }`}>{t('dashboard.recentActivity')}</h4>
                   <div className="space-y-4">
                     {recentActivities.map((activity) => (
-                      <div key={activity.id} className="flex items-center p-4 bg-white rounded-2xl shadow-sm border border-gray-100">
-                        <div className="bg-purple-100 p-2 rounded-2xl mr-4">
+                      <div key={activity.id} className={`flex items-center p-4 rounded-2xl shadow-sm border transition-colors duration-200 ${
+                        isDark 
+                          ? 'bg-gray-800 border-gray-700' 
+                          : 'bg-white border-gray-100'
+                      }`}>
+                        <div className={`p-2 rounded-2xl mr-4 ${
+                          isDark ? 'bg-purple-900/50' : 'bg-purple-100'
+                        }`}>
                           <Bell className="h-5 w-5 text-purple-600" />
                         </div>
                         <div className="flex-1">
-                          <p className="text-sm text-gray-900 font-medium">{activity.message}</p>
-                          <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
+                          <p className={`text-sm font-medium ${
+                            isDark ? 'text-gray-200' : 'text-gray-900'
+                          }`}>{activity.message}</p>
+                          <p className={`text-xs mt-1 ${
+                            isDark ? 'text-gray-400' : 'text-gray-500'
+                          }`}>{activity.time}</p>
                         </div>
                       </div>
                     ))}
@@ -545,176 +539,28 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
               </div>
             )}
 
-            {activeTab === 'documents' && (
-              <div className="space-y-6">
-                {/* Header */}
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h4 className="text-xl font-semibold text-gray-900">My Documents</h4>
-                    <p className="text-sm text-gray-600 mt-1">
-                      {user.nationality?.toLowerCase() === 'indian' || user.nationality?.toLowerCase() === 'india' 
-                        ? 'Upload your Aadhar Card for verification'
-                        : 'Upload your Passport and Visa for verification'
-                      }
-                    </p>
-                  </div>
-                </div>
-
-                {/* Required Documents */}
-                <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6">
-                  <h5 className="font-semibold text-blue-900 mb-3 flex items-center">
-                    <FileText className="h-5 w-5 mr-2" />
-                    Required Documents
-                  </h5>
-                  <div className="grid gap-4">
-                    {documents.map((doc) => (
-                      <div key={doc.id} className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center">
-                            <div className={`p-3 rounded-2xl mr-4 ${
-                              doc.status === 'verified' ? 'bg-green-100' :
-                              doc.status === 'pending' && doc.file ? 'bg-yellow-100' :
-                              'bg-gray-100'
-                            }`}>
-                              {doc.type === 'Aadhar Card' ? (
-                                <div className="w-6 h-6 bg-gradient-to-r from-orange-500 to-green-500 rounded flex items-center justify-center">
-                                  <span className="text-white text-xs font-bold">ID</span>
-                                </div>
-                              ) : doc.type === 'Passport' ? (
-                                <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center">
-                                  <span className="text-white text-xs font-bold">P</span>
-                                </div>
-                              ) : (
-                                <div className="w-6 h-6 bg-purple-600 rounded flex items-center justify-center">
-                                  <span className="text-white text-xs font-bold">V</span>
-                                </div>
-                              )}
-                            </div>
-                            <div>
-                              <h6 className="font-semibold text-gray-900 text-lg">{doc.type}</h6>
-                              <p className="text-sm text-gray-500 mt-1">
-                                {doc.uploadedAt ? `Uploaded on ${doc.uploadedAt}` : 'Not uploaded yet'}
-                              </p>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-center space-x-3">
-                            {/* Status Badge */}
-                            <div className={`flex items-center px-4 py-2 rounded-2xl text-sm font-medium ${
-                              doc.status === 'verified' ? 'bg-green-100 text-green-800' :
-                              doc.status === 'pending' && doc.file ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-gray-100 text-gray-600'
-                            }`}>
-                              {doc.status === 'verified' ? (
-                                <><CheckCircle className="h-4 w-4 mr-2" />Verified</>
-                              ) : doc.status === 'pending' && doc.file ? (
-                                <>{ uploadingDocId === doc.id ? (
-                                  <><div className="animate-spin w-4 h-4 border-2 border-yellow-600 border-t-transparent rounded-full mr-2"></div>Uploading...</>
-                                ) : (
-                                  <><Clock className="h-4 w-4 mr-2" />Pending</>
-                                )}</>
-                              ) : (
-                                <><XCircle className="h-4 w-4 mr-2" />Required</>
-                              )}
-                            </div>
-                            
-                            {/* Upload Button */}
-                            {!doc.file && (
-                              <label className="flex items-center px-6 py-3 bg-purple-600 text-white rounded-2xl hover:bg-purple-700 shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer">
-                                <Upload className="h-5 w-5 mr-2" />
-                                Upload {doc.type}
-                                <input
-                                  type="file"
-                                  accept="image/*,.pdf"
-                                  className="hidden"
-                                  onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) {
-                                      handleFileUpload(doc.id, file);
-                                    }
-                                  }}
-                                  disabled={uploadingDocId !== null}
-                                />
-                              </label>
-                            )}
-                            
-                            {/* Re-upload Button */}
-                            {doc.file && doc.status !== 'verified' && (
-                              <label className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-2xl hover:bg-gray-700 transition-all duration-200 cursor-pointer">
-                                <Upload className="h-4 w-4 mr-2" />
-                                Re-upload
-                                <input
-                                  type="file"
-                                  accept="image/*,.pdf"
-                                  className="hidden"
-                                  onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) {
-                                      handleFileUpload(doc.id, file);
-                                    }
-                                  }}
-                                  disabled={uploadingDocId !== null}
-                                />
-                              </label>
-                            )}
-                          </div>
-                        </div>
-                        
-                        {/* File Info */}
-                        {doc.file && (
-                          <div className="mt-4 pt-4 border-t border-gray-100">
-                            <div className="flex items-center text-sm text-gray-600">
-                              <FileText className="h-4 w-4 mr-2" />
-                              <span>{doc.file.name}</span>
-                              <span className="mx-2">•</span>
-                              <span>{(doc.file.size / 1024 / 1024).toFixed(2)} MB</span>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Upload Instructions */}
-                <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
-                  <h5 className="font-semibold text-gray-900 mb-3 flex items-center">
-                    <Info className="h-5 w-5 mr-2" />
-                    Upload Guidelines
-                  </h5>
-                  <div className="space-y-2 text-sm text-gray-700">
-                    <p>• Supported formats: JPG, PNG, PDF</p>
-                    <p>• Maximum file size: 10 MB</p>
-                    <p>• Ensure document is clearly visible and not blurred</p>
-                    <p>• All corners of the document should be visible</p>
-                    {user.nationality?.toLowerCase() === 'indian' || user.nationality?.toLowerCase() === 'india' ? (
-                      <p>• For Aadhar Card: Both front and back sides can be uploaded as separate files</p>
-                    ) : (
-                      <>
-                        <p>• For Passport: Upload the main information page</p>
-                        <p>• For Visa: Upload the page with your visa stamp/sticker</p>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
 
             {activeTab === 'map' && (
               <div className="space-y-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h4 className="text-xl font-semibold text-gray-900 flex items-center">
+                  <h4 className={`text-xl font-semibold flex items-center ${
+                    isDark ? 'text-gray-100' : 'text-gray-900'
+                  }`}>
                     <Map className="h-6 w-6 text-blue-600 mr-2" />
-                    Safety Map
+                    {t('navigation.map')}
                   </h4>
-                  <div className="text-sm text-gray-600">
-                    Your location and nearby safety zones
+                  <div className={`text-sm ${
+                    isDark ? 'text-gray-300' : 'text-gray-600'
+                  }`}>
+                    {t('map.safetyMapDesc')}
                   </div>
                 </div>
                 
-                <div className="bg-white rounded-3xl shadow-xl overflow-hidden">
+                <div className={`rounded-3xl shadow-xl overflow-hidden transition-colors duration-200 ${
+                  isDark ? 'bg-gray-800' : 'bg-white'
+                }`}>
                   <UserSafetyMap 
-                    userLocation={currentLocation}
+                    userLocation={currentLocation || undefined}
                     userName={user.name}
                   />
                 </div>
@@ -723,31 +569,51 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
 
             {activeTab === 'emergency' && (
               <div className="space-y-6">
-                <div className="bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-200 rounded-3xl p-8">
+                <div className={`border-2 rounded-3xl p-8 transition-colors duration-200 ${
+                  isDark 
+                    ? 'bg-gradient-to-br from-red-900/20 to-red-800/20 border-red-700/50' 
+                    : 'bg-gradient-to-br from-red-50 to-red-100 border-red-200'
+                }`}>
                   <div className="flex items-center mb-4">
                     <div className="bg-red-600 p-3 rounded-2xl mr-4">
                       <AlertTriangle className="h-6 w-6 text-white" />
                     </div>
-                    <h4 className="text-xl font-semibold text-red-900">Emergency Information</h4>
+                    <h4 className={`text-xl font-semibold ${
+                      isDark ? 'text-red-200' : 'text-red-900'
+                    }`}>{t('emergency.emergencyInformation')}</h4>
                   </div>
-                  <p className="text-red-700 mb-6 text-lg">In case of emergency, immediately contact the numbers below or use the panic button.</p>
+                  <p className={`mb-6 text-lg ${
+                    isDark ? 'text-red-300' : 'text-red-700'
+                  }`}>{t('emergency.emergencyDesc')}</p>
                   <button className="bg-gradient-to-r from-red-600 to-red-700 text-white px-8 py-4 rounded-2xl font-bold hover:from-red-700 hover:to-red-800 shadow-lg hover:scale-105 transition-all duration-200 text-lg">
-                    🚨 PANIC BUTTON - SEND EMERGENCY ALERT
+                    {t('emergency.panicButton')}
                   </button>
                 </div>
 
                 <div>
-                  <h4 className="text-xl font-semibold text-gray-900 mb-6">Emergency Contacts</h4>
+                  <h4 className={`text-xl font-semibold mb-6 ${
+                    isDark ? 'text-gray-100' : 'text-gray-900'
+                  }`}>{t('emergency.emergencyContacts')}</h4>
                   <div className="space-y-4">
                     {emergencyContacts.map((contact) => (
-                      <div key={contact.id} className="flex items-center justify-between p-6 bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200">
+                      <div key={contact.id} className={`flex items-center justify-between p-6 border rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 ${
+                        isDark 
+                          ? 'bg-gray-800 border-gray-700' 
+                          : 'bg-white border-gray-100'
+                      }`}>
                         <div className="flex items-center">
-                          <div className="bg-green-100 p-3 rounded-2xl mr-4">
+                          <div className={`p-3 rounded-2xl mr-4 ${
+                            isDark ? 'bg-green-900/50' : 'bg-green-100'
+                          }`}>
                             <Phone className="h-6 w-6 text-green-600" />
                           </div>
                           <div>
-                            <h5 className="font-semibold text-gray-900 text-lg">{contact.name}</h5>
-                            <p className="text-sm text-gray-500 mt-1">{contact.relation}</p>
+                            <h5 className={`font-semibold text-lg ${
+                              isDark ? 'text-gray-200' : 'text-gray-900'
+                            }`}>{contact.name}</h5>
+                            <p className={`text-sm mt-1 ${
+                              isDark ? 'text-gray-400' : 'text-gray-500'
+                            }`}>{contact.relation}</p>
                           </div>
                         </div>
                         <a 
@@ -766,21 +632,31 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
             {activeTab === 'location' && (
               <div className="space-y-6">
                 {/* Real-time Location Status */}
-                <div className="bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200 rounded-3xl p-8">
+                <div className={`border-2 rounded-3xl p-8 transition-colors duration-200 ${
+                  isDark 
+                    ? 'bg-gradient-to-br from-blue-900/20 to-blue-800/20 border-blue-700/30' 
+                    : 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200'
+                }`}>
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center">
                       <div className="p-3 rounded-2xl mr-4 bg-blue-600">
                         <MapPin className="h-6 w-6 text-white" />
                       </div>
                       <div>
-                        <h4 className="text-xl font-semibold text-blue-900">Current Location</h4>
-                        <p className="text-sm text-blue-700">
-                          Your current position and nearby areas
+                        <h4 className={`text-xl font-semibold ${
+                          isDark ? 'text-blue-200' : 'text-blue-900'
+                        }`}>{t('location.currentLocation')}</h4>
+                        <p className={`text-sm ${
+                          isDark ? 'text-blue-300' : 'text-blue-700'
+                        }`}>
+                          {t('location.locationInfo')}
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                        isDark ? 'bg-blue-900/50 text-blue-300' : 'bg-blue-100 text-blue-800'
+                      }`}>
                         <MapPin className="w-3 h-3 mr-2" />
                         LOCATION INFO
                       </div>
@@ -788,26 +664,40 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
                   </div>
 
                   {locationError ? (
-                    <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
+                    <div className={`border rounded-2xl p-4 transition-colors duration-200 ${
+                      isDark 
+                        ? 'bg-red-900/20 border-red-700/50' 
+                        : 'bg-red-50 border-red-200'
+                    }`}>
                       <div className="flex items-center">
                         <AlertTriangle className="h-5 w-5 text-red-600 mr-2" />
-                        <p className="text-red-700 font-medium">Location Error</p>
+                        <p className={`font-medium ${
+                          isDark ? 'text-red-300' : 'text-red-700'
+                        }`}>{t('location.locationError')}</p>
                       </div>
-                      <p className="text-red-600 text-sm mt-2">{locationError}</p>
+                      <p className={`text-sm mt-2 ${
+                        isDark ? 'text-red-400' : 'text-red-600'
+                      }`}>{locationError}</p>
                       <button 
                         onClick={getCurrentLocation}
                         className="mt-3 px-4 py-2 bg-red-600 text-white rounded-2xl hover:bg-red-700 font-medium transition-all duration-200"
                       >
                         <RefreshCw className="h-4 w-4 inline mr-2" />
-                        Retry
+                        {t('location.retry')}
                       </button>
                     </div>
                   ) : currentLocation ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="bg-white rounded-2xl p-4 border border-gray-200">
-                        <h5 className="font-semibold text-gray-900 mb-2 flex items-center">
+                      <div className={`rounded-2xl p-4 border transition-colors duration-200 ${
+                        isDark 
+                          ? 'bg-gray-800 border-gray-700' 
+                          : 'bg-white border-gray-200'
+                      }`}>
+                        <h5 className={`font-semibold mb-2 flex items-center ${
+                          isDark ? 'text-gray-200' : 'text-gray-900'
+                        }`}>
                           <MapPin className="h-5 w-5 text-blue-600 mr-2" />
-                          Current Position
+                          {t('location.currentPosition')}
                         </h5>
                         <p className="text-blue-700 font-mono text-sm">
                           Lat: {currentLocation.lat.toFixed(6)}
@@ -816,46 +706,68 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
                           Lng: {currentLocation.lng.toFixed(6)}
                         </p>
                         {locationAccuracy && (
-                          <p className="text-gray-600 text-xs mt-2">
-                            Accuracy: ±{Math.round(locationAccuracy)}m
+                          <p className={`text-xs mt-2 ${
+                            isDark ? 'text-gray-400' : 'text-gray-600'
+                          }`}>
+                            {t('location.accuracy', { meters: Math.round(locationAccuracy) })}
                           </p>
                         )}
                       </div>
                       
-                      <div className="bg-white rounded-2xl p-4 border border-gray-200">
-                        <h5 className="font-semibold text-gray-900 mb-2 flex items-center">
+                      <div className={`rounded-2xl p-4 border transition-colors duration-200 ${
+                        isDark 
+                          ? 'bg-gray-800 border-gray-700' 
+                          : 'bg-white border-gray-200'
+                      }`}>
+                        <h5 className={`font-semibold mb-2 flex items-center ${
+                          isDark ? 'text-gray-200' : 'text-gray-900'
+                        }`}>
                           <Clock className="h-5 w-5 text-green-600 mr-2" />
-                          Last Updated
+                          {t('dashboard.lastUpdated')}
                         </h5>
                         {lastUpdated && (
                           <>
-                            <p className="text-gray-700 text-sm">
+                            <p className={`text-sm ${
+                              isDark ? 'text-gray-300' : 'text-gray-700'
+                            }`}>
                               {lastUpdated.toLocaleTimeString()}
                             </p>
-                            <p className="text-gray-600 text-xs mt-1">
+                            <p className={`text-xs mt-1 ${
+                              isDark ? 'text-gray-400' : 'text-gray-600'
+                            }`}>
                               {lastUpdated.toLocaleDateString()}
                             </p>
                           </>
                         )}
-                        <div className="text-xs text-gray-600 mt-2">
+                        <div className={`text-xs mt-2 ${
+                          isDark ? 'text-gray-400' : 'text-gray-600'
+                        }`}>
                           Location information
                         </div>
                       </div>
                     </div>
                   ) : (
                     <div className="text-center py-8">
-                      <Compass className="h-12 w-12 text-gray-400 mx-auto mb-4 animate-spin" />
-                      <p className="text-gray-600">Getting your location...</p>
+                      <Compass className={`h-12 w-12 mx-auto mb-4 animate-spin ${
+                        isDark ? 'text-gray-500' : 'text-gray-400'
+                      }`} />
+                      <p className={`${
+                        isDark ? 'text-gray-300' : 'text-gray-600'
+                      }`}>{t('location.gettingLocation')}</p>
                     </div>
                   )}
                 </div>
 
                 {/* Location History */}
                 {locationHistory.length > 0 && (
-                  <div className="bg-white rounded-3xl shadow-xl p-6">
-                    <h4 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                  <div className={`rounded-3xl shadow-xl p-6 transition-colors duration-200 ${
+                    isDark ? 'bg-gray-800' : 'bg-white'
+                  }`}>
+                    <h4 className={`text-xl font-semibold mb-4 flex items-center ${
+                      isDark ? 'text-gray-100' : 'text-gray-900'
+                    }`}>
                       <Map className="h-6 w-6 text-purple-600 mr-2" />
-                      Location History
+                      {t('location.locationHistory')}
                     </h4>
                     <div className="space-y-3 max-h-60 overflow-y-auto">
                       {locationHistory.slice().reverse().map((location, index) => (
@@ -886,7 +798,9 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
 
                 {/* Safety Zones */}
                 <div>
-                  <h4 className="text-xl font-semibold text-gray-900 mb-6">Safety Zones</h4>
+                  <h4 className={`text-xl font-semibold mb-6 ${
+                    isDark ? 'text-gray-100' : 'text-gray-900'
+                  }`}>{t('location.safetyZones')}</h4>
                   <div className="space-y-4">
                     <div className="p-6 bg-gradient-to-r from-green-50 to-green-100 border-l-4 border-green-500 rounded-2xl">
                       <div className="flex items-center justify-between">
@@ -949,99 +863,142 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
             {activeTab === 'settings' && (
               <div className="space-y-6">
                 {/* Profile Settings */}
-                <div className="bg-white rounded-3xl shadow-xl p-6">
-                  <h4 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                <div className={`rounded-3xl shadow-xl p-6 transition-colors duration-200 ${
+                  isDark ? 'bg-gray-800' : 'bg-white'
+                }`}>
+                  <h4 className={`text-xl font-semibold mb-6 flex items-center ${
+                    isDark ? 'text-gray-100' : 'text-gray-900'
+                  }`}>
                     <User className="h-6 w-6 text-blue-600 mr-2" />
-                    Profile Settings
+                    {t('settings.profileSettings')}
                   </h4>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Display Name
+                      <label className={`block text-sm font-medium mb-2 ${
+                        isDark ? 'text-gray-200' : 'text-gray-700'
+                      }`}>
+                        {t('settings.displayName')}
                       </label>
                       <input
                         type="text"
                         value={user.name}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-gray-50"
+                        className={`w-full px-4 py-3 border rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors ${
+                          isDark 
+                            ? 'border-gray-600 bg-gray-700 text-white' 
+                            : 'border-gray-300 bg-gray-50 text-gray-900'
+                        }`}
                         readOnly
                       />
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Email Address
+                      <label className={`block text-sm font-medium mb-2 ${
+                        isDark ? 'text-gray-200' : 'text-gray-700'
+                      }`}>
+                        {t('settings.emailAddress')}
                       </label>
                       <input
                         type="email"
                         value={user.email}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-gray-50"
+                        className={`w-full px-4 py-3 border rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors ${
+                          isDark 
+                            ? 'border-gray-600 bg-gray-700 text-white' 
+                            : 'border-gray-300 bg-gray-50 text-gray-900'
+                        }`}
                         readOnly
                       />
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Language
+                      <label className={`block text-sm font-medium mb-2 ${
+                        isDark ? 'text-gray-200' : 'text-gray-700'
+                      }`}>
+                        {t('settings.language')}
                       </label>
                       <select
-                        value={settings.display.language}
-                        onChange={(e) => updateSettings('display', 'language', e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white"
+                        value={currentLanguage}
+                        onChange={(e) => setLanguage(e.target.value as SupportedLanguage)}
+                        className={`w-full px-4 py-3 border rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors ${
+                          isDark 
+                            ? 'border-gray-600 bg-gray-700 text-white' 
+                            : 'border-gray-300 bg-white text-gray-900'
+                        }`}
                       >
-                        <option value="English">English</option>
-                        <option value="Hindi">हिन्दी (Hindi)</option>
-                        <option value="Spanish">Español</option>
-                        <option value="French">Français</option>
+                        {Object.entries(LANGUAGES).map(([code, { nativeName }]) => (
+                          <option key={code} value={code}>
+                            {nativeName}
+                          </option>
+                        ))}
                       </select>
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Theme
+                      <label className={`block text-sm font-medium mb-2 ${
+                        isDark ? 'text-gray-200' : 'text-gray-700'
+                      }`}>
+                        {t('settings.theme')}
                       </label>
                       <select
-                        value={settings.display.theme}
-                        onChange={(e) => updateSettings('display', 'theme', e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white"
+                        value={theme}
+                        onChange={(e) => setTheme(e.target.value as 'light' | 'dark' | 'system')}
+                        className={`w-full px-4 py-3 border rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors ${
+                          isDark 
+                            ? 'border-gray-600 bg-gray-700 text-white' 
+                            : 'border-gray-300 bg-white text-gray-900'
+                        }`}
                       >
-                        <option value="light">Light Mode</option>
-                        <option value="dark">Dark Mode</option>
-                        <option value="auto">Auto (System)</option>
+                        <option value="light">{t('theme.lightMode')}</option>
+                        <option value="dark">{t('theme.darkMode')}</option>
+                        <option value="system">{t('theme.auto')}</option>
                       </select>
                     </div>
                   </div>
                 </div>
 
                 {/* Notification Settings */}
-                <div className="bg-white rounded-3xl shadow-xl p-6">
-                  <h4 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                <div className={`rounded-3xl shadow-xl p-6 transition-colors duration-200 ${
+                  isDark ? 'bg-gray-800' : 'bg-white'
+                }`}>
+                  <h4 className={`text-xl font-semibold mb-6 flex items-center ${
+                    isDark ? 'text-gray-100' : 'text-gray-900'
+                  }`}>
                     <Bell className="h-6 w-6 text-yellow-600 mr-2" />
-                    Notification Preferences
+                    {t('settings.notificationPreferences')}
                   </h4>
                   
                   <div className="space-y-4">
                     {[
-                      { key: 'emergencyAlerts', label: 'Emergency Alerts', desc: 'Critical safety notifications', icon: AlertTriangle },
-                      { key: 'locationUpdates', label: 'Location Updates', desc: 'Safety zone and location notifications', icon: MapPin },
-                      { key: 'safetyReminders', label: 'Safety Reminders', desc: 'Periodic safety tips and reminders', icon: Shield },
-                      { key: 'soundEnabled', label: 'Sound Notifications', desc: 'Play sounds for notifications', icon: Volume2 },
-                      { key: 'vibrationEnabled', label: 'Vibration', desc: 'Vibrate for important alerts', icon: Vibrate }
+                      { key: 'emergencyAlerts', label: t('settings.emergencyAlerts'), desc: t('settings.emergencyAlertsDesc'), icon: AlertTriangle },
+                      { key: 'locationUpdates', label: t('settings.locationUpdates'), desc: t('settings.locationUpdatesDesc'), icon: MapPin },
+                      { key: 'safetyReminders', label: t('settings.safetyReminders'), desc: t('settings.safetyRemindersDesc'), icon: Shield },
+                      { key: 'soundEnabled', label: t('settings.soundNotifications'), desc: t('settings.soundNotificationsDesc'), icon: Volume2 },
+                      { key: 'vibrationEnabled', label: t('settings.vibration'), desc: t('settings.vibrationDesc'), icon: Vibrate }
                     ].map((setting) => (
-                      <div key={setting.key} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
+                      <div key={setting.key} className={`flex items-center justify-between p-4 rounded-2xl transition-colors duration-200 ${
+                        isDark ? 'bg-gray-700/50' : 'bg-gray-50'
+                      }`}>
                         <div className="flex items-center">
-                          <div className="bg-gray-200 p-2 rounded-2xl mr-3">
-                            <setting.icon className="h-5 w-5 text-gray-600" />
+                          <div className={`p-2 rounded-2xl mr-3 ${
+                            isDark ? 'bg-gray-600' : 'bg-gray-200'
+                          }`}>
+                            <setting.icon className={`h-5 w-5 ${
+                              isDark ? 'text-gray-300' : 'text-gray-600'
+                            }`} />
                           </div>
                           <div>
-                            <p className="font-medium text-gray-900">{setting.label}</p>
-                            <p className="text-sm text-gray-600">{setting.desc}</p>
+                            <p className={`font-medium ${
+                              isDark ? 'text-gray-200' : 'text-gray-900'
+                            }`}>{setting.label}</p>
+                            <p className={`text-sm ${
+                              isDark ? 'text-gray-400' : 'text-gray-600'
+                            }`}>{setting.desc}</p>
                           </div>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer">
                           <input
                             type="checkbox"
-                            checked={settings.notifications[setting.key]}
+                            checked={settings.notifications[setting.key as keyof typeof settings.notifications]}
                             onChange={(e) => updateSettings('notifications', setting.key, e.target.checked)}
                             className="sr-only peer"
                           />
@@ -1053,21 +1010,35 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
                 </div>
 
                 {/* Privacy Settings */}
-                <div className="bg-white rounded-3xl shadow-xl p-6">
-                  <h4 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                <div className={`rounded-3xl shadow-xl p-6 transition-colors duration-200 ${
+                  isDark ? 'bg-gray-800' : 'bg-white'
+                }`}>
+                  <h4 className={`text-xl font-semibold mb-6 flex items-center ${
+                    isDark ? 'text-gray-100' : 'text-gray-900'
+                  }`}>
                     <Lock className="h-6 w-6 text-green-600 mr-2" />
-                    Privacy & Security
+                    {t('settings.privacySecurity')}
                   </h4>
                   
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
+                    <div className={`flex items-center justify-between p-4 rounded-2xl transition-colors duration-200 ${
+                      isDark ? 'bg-gray-700/50' : 'bg-gray-50'
+                    }`}>
                       <div className="flex items-center">
-                        <div className="bg-gray-200 p-2 rounded-2xl mr-3">
-                          <MapPin className="h-5 w-5 text-gray-600" />
+                        <div className={`p-2 rounded-2xl mr-3 ${
+                          isDark ? 'bg-gray-600' : 'bg-gray-200'
+                        }`}>
+                          <MapPin className={`h-5 w-5 ${
+                            isDark ? 'text-gray-300' : 'text-gray-600'
+                          }`} />
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">Location Sharing</p>
-                          <p className="text-sm text-gray-600">Allow authorities to access your location</p>
+                          <p className={`font-medium ${
+                            isDark ? 'text-gray-200' : 'text-gray-900'
+                          }`}>{t('settings.locationSharing')}</p>
+                          <p className={`text-sm ${
+                            isDark ? 'text-gray-400' : 'text-gray-600'
+                          }`}>{t('settings.locationSharingDesc')}</p>
                         </div>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
@@ -1102,10 +1073,14 @@ export function UserDashboard({ user, onLogout }: UserDashboardProps) {
                 </div>
 
                 {/* Emergency Settings */}
-                <div className="bg-white rounded-3xl shadow-xl p-6">
-                  <h4 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                <div className={`rounded-3xl shadow-xl p-6 transition-colors duration-200 ${
+                  isDark ? 'bg-gray-800' : 'bg-white'
+                }`}>
+                  <h4 className={`text-xl font-semibold mb-6 flex items-center ${
+                    isDark ? 'text-gray-100' : 'text-gray-900'
+                  }`}>
                     <AlertTriangle className="h-6 w-6 text-red-600 mr-2" />
-                    Emergency Settings
+                    {t('settings.emergencySettings')}
                   </h4>
                   
                   <div className="space-y-4">

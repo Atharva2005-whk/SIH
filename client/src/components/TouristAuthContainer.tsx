@@ -13,7 +13,10 @@ import {
   EyeOff,
   UserPlus,
   ArrowLeft,
-  ArrowRight
+  ArrowRight,
+  Upload,
+  FileText,
+  CheckCircle
 } from 'lucide-react';
 
 interface TouristAuthContainerProps {
@@ -38,6 +41,11 @@ interface TouristRegisterCredentials {
   emergencyContactName: string;
   emergencyContactNumber: string;
   agreeToTerms: boolean;
+  documents: {
+    aadhar?: File;
+    passport?: File;
+    visa?: File;
+  };
 }
 
 export function TouristAuthContainer({ onAuthentication }: TouristAuthContainerProps) {
@@ -54,11 +62,12 @@ export function TouristAuthContainer({ onAuthentication }: TouristAuthContainerP
     password: '',
     confirmPassword: '',
     phoneNumber: '',
-    nationality: '',
+    nationality: 'Indian', // Default to Indian since userType defaults to 'indian'
     passportNumber: '',
     emergencyContactName: '',
     emergencyContactNumber: '',
-    agreeToTerms: false
+    agreeToTerms: false,
+    documents: {}
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -81,18 +90,38 @@ export function TouristAuthContainer({ onAuthentication }: TouristAuthContainerP
         throw new Error('Please enter a valid email address');
       }
 
-      // Transform to match expected format
-      const transformedCredentials = {
-        userType: loginData.email.includes('indian') ? 'indian' : 'foreign',
-        fullName: loginData.email.includes('indian') ? 'Indian Tourist' : 'Foreign Tourist',
-        email: loginData.email,
+      console.log('🚀 Tourist login attempt:', loginData);
+      
+      const loginRequestData = {
+        identifier: loginData.email,
         password: loginData.password,
-        phoneNumber: '+91-9876543210',
-        emergencyContactName: 'Emergency Contact',
-        emergencyContactNumber: '+91-9876543211'
+        nationality: loginData.email.includes('indian') ? 'Indian' : 'Foreign'
       };
-
-      await onAuthentication(transformedCredentials);
+      
+      // Import the API client to call login directly
+      const { apiClient } = await import('../services/api');
+      
+      const response = await apiClient.touristLogin(loginRequestData);
+      
+      if (response.success && response.data) {
+        console.log('✅ Login successful!');
+        
+        // Create the user object for onAuthentication
+        const userForAuth = {
+          userType: loginData.email.includes('indian') ? 'indian' : 'foreign',
+          fullName: response.data.user.name,
+          email: response.data.user.email,
+          password: loginData.password,
+          phoneNumber: '+91-9876543210',
+          emergencyContactName: 'Emergency Contact',
+          emergencyContactNumber: '+91-9876543211',
+          isLoggedIn: true // Flag to indicate this is login, not registration
+        };
+        
+        await onAuthentication(userForAuth);
+      } else {
+        throw new Error(response.error || 'Login failed');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
@@ -127,7 +156,8 @@ export function TouristAuthContainer({ onAuthentication }: TouristAuthContainerP
       if (!registerData.phoneNumber.trim()) {
         throw new Error('Please enter your phone number');
       }
-      if (!registerData.nationality.trim()) {
+      // Auto-set nationality for Indian users, validate for foreign users
+      if (registerData.userType === 'foreign' && !registerData.nationality.trim()) {
         throw new Error('Please select your nationality');
       }
       if (!registerData.passportNumber.trim()) {
@@ -143,18 +173,74 @@ export function TouristAuthContainer({ onAuthentication }: TouristAuthContainerP
         throw new Error('Please agree to the Terms of Service and Privacy Policy');
       }
 
-      // Transform to match expected format
-      const transformedCredentials = {
-        userType: registerData.userType,
-        fullName: registerData.fullName,
+      // Document validation
+      if (registerData.userType === 'indian') {
+        if (!registerData.documents.aadhar) {
+          throw new Error('Please upload your Aadhar Card');
+        }
+      } else {
+        if (!registerData.documents.passport) {
+          throw new Error('Please upload your Passport');
+        }
+        if (!registerData.documents.visa) {
+          throw new Error('Please upload your Visa');
+        }
+      }
+
+      // Prepare tourist data for registration
+      const touristData = {
+        name: registerData.fullName,
         email: registerData.email,
-        password: registerData.password,
         phoneNumber: registerData.phoneNumber,
-        emergencyContactName: registerData.emergencyContactName,
-        emergencyContactNumber: registerData.emergencyContactNumber
+        nationality: registerData.userType === 'indian' ? 'Indian' : registerData.nationality,
+        passportNumber: registerData.passportNumber,
+        emergencyContact: registerData.emergencyContactName,
+        isVerified: false,
+        verificationLevel: 'none' as const
       };
 
-      await onAuthentication(transformedCredentials);
+      // Prepare document uploads
+      const documentUploads = [];
+      if (registerData.documents.aadhar) {
+        documentUploads.push({
+          type: 'aadhar' as const,
+          file: registerData.documents.aadhar
+        });
+      }
+      if (registerData.documents.passport) {
+        documentUploads.push({
+          type: 'passport' as const,
+          file: registerData.documents.passport
+        });
+      }
+      if (registerData.documents.visa) {
+        documentUploads.push({
+          type: 'visa' as const,
+          file: registerData.documents.visa
+        });
+      }
+
+      console.log('🚀 Registering tourist:', touristData);
+      console.log('📎 Documents:', documentUploads);
+
+      // Import the API client to call registration directly
+      const { apiClient } = await import('../services/api');
+      
+      const response = await apiClient.registerTourist(touristData, documentUploads);
+      
+      if (response.success) {
+        console.log('✅ Registration successful!');
+        alert(`Registration successful! Welcome ${touristData.name}! Please login to access your dashboard.`);
+        // Switch to login view
+        setCurrentView('login');
+        setLoginData({
+          email: registerData.email,
+          password: registerData.password,
+          rememberMe: false
+        });
+      } else {
+        throw new Error(response.error || 'Registration failed');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed');
     } finally {
@@ -168,7 +254,26 @@ export function TouristAuthContainer({ onAuthentication }: TouristAuthContainerP
   };
 
   const updateRegisterField = (field: keyof TouristRegisterCredentials, value: any) => {
-    setRegisterData(prev => ({ ...prev, [field]: value }));
+    setRegisterData(prev => ({ 
+      ...prev, 
+      [field]: value,
+      // Clear documents when changing user type and set nationality
+      ...(field === 'userType' && { 
+        documents: {},
+        nationality: value === 'indian' ? 'Indian' : ''
+      })
+    }));
+    setError('');
+  };
+
+  const handleDocumentUpload = (docType: 'aadhar' | 'passport' | 'visa', file: File | undefined) => {
+    setRegisterData(prev => ({
+      ...prev,
+      documents: {
+        ...prev.documents,
+        [docType]: file
+      }
+    }));
     setError('');
   };
 
@@ -497,7 +602,9 @@ export function TouristAuthContainer({ onAuthentication }: TouristAuthContainerP
               </div>
 
               {/* Phone and Nationality */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className={`grid gap-4 ${
+                registerData.userType === 'indian' ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'
+              }`}>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Phone Number
@@ -511,40 +618,42 @@ export function TouristAuthContainer({ onAuthentication }: TouristAuthContainerP
                       value={registerData.phoneNumber}
                       onChange={(e) => updateRegisterField('phoneNumber', e.target.value)}
                       className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-2xl shadow-sm bg-gray-50 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:bg-white transition-all duration-200"
-                      placeholder="Enter phone number"
+                      placeholder={registerData.userType === 'indian' ? 'Enter phone number (e.g., +91-9876543210)' : 'Enter phone number'}
                       required
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nationality
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <MapPin className="h-5 w-5 text-gray-400" />
+                {/* Only show nationality for foreign visitors */}
+                {registerData.userType === 'foreign' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Nationality
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <MapPin className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <select
+                        value={registerData.nationality}
+                        onChange={(e) => updateRegisterField('nationality', e.target.value)}
+                        className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-2xl shadow-sm bg-gray-50 text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:bg-white transition-all duration-200 appearance-none"
+                        required
+                      >
+                        <option value="">Select nationality</option>
+                        <option value="American">American</option>
+                        <option value="British">British</option>
+                        <option value="German">German</option>
+                        <option value="French">French</option>
+                        <option value="Canadian">Canadian</option>
+                        <option value="Australian">Australian</option>
+                        <option value="Japanese">Japanese</option>
+                        <option value="Chinese">Chinese</option>
+                        <option value="Other">Other</option>
+                      </select>
                     </div>
-                    <select
-                      value={registerData.nationality}
-                      onChange={(e) => updateRegisterField('nationality', e.target.value)}
-                      className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-2xl shadow-sm bg-gray-50 text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 focus:bg-white transition-all duration-200 appearance-none"
-                      required
-                    >
-                      <option value="">Select nationality</option>
-                      <option value="Indian">Indian</option>
-                      <option value="American">American</option>
-                      <option value="British">British</option>
-                      <option value="German">German</option>
-                      <option value="French">French</option>
-                      <option value="Canadian">Canadian</option>
-                      <option value="Australian">Australian</option>
-                      <option value="Japanese">Japanese</option>
-                      <option value="Chinese">Chinese</option>
-                      <option value="Other">Other</option>
-                    </select>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* Passport/ID Number */}
@@ -560,6 +669,178 @@ export function TouristAuthContainer({ onAuthentication }: TouristAuthContainerP
                   placeholder="Enter passport or ID number"
                   required
                 />
+              </div>
+
+              {/* Document Upload Section */}
+              <div>
+                <div className="flex items-center mb-4">
+                  <div className="p-2 rounded-full bg-gray-100 mr-3">
+                    <FileText className="h-5 w-5 text-gray-600" />
+                  </div>
+                  <h4 className="font-semibold text-gray-900">
+                    Identity Verification 
+                    <span className="text-xs text-gray-500 ml-2">
+                      ({registerData.userType === 'indian' ? 'Indian' : 'Foreign'} Citizen)
+                    </span>
+                  </h4>
+                </div>
+                
+                {registerData.userType === 'indian' ? (
+                  <div className="border-2 border-dashed border-gray-300 rounded-2xl p-6">
+                    <div className="text-center">
+                      <div className="p-4 bg-orange-100 rounded-full w-fit mx-auto mb-4">
+                        <CreditCard className="h-8 w-8 text-orange-600" />
+                      </div>
+                      <h5 className="font-semibold text-gray-900 mb-2">Upload Aadhar Card</h5>
+                      <p className="text-sm text-gray-600 mb-4">Upload a clear photo of your Aadhar card (both sides accepted)</p>
+                      
+                      {registerData.documents.aadhar ? (
+                        <div className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-4">
+                          <CheckCircle className="h-6 w-6 text-green-600 mx-auto mb-2" />
+                          <p className="text-green-800 font-medium">{registerData.documents.aadhar.name}</p>
+                          <p className="text-green-600 text-sm">{(registerData.documents.aadhar.size / 1024 / 1024).toFixed(2)} MB</p>
+                          <button
+                            type="button"
+                            onClick={() => handleDocumentUpload('aadhar', undefined)}
+                            className="mt-2 text-red-600 hover:text-red-700 text-sm font-medium"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ) : (
+                        <div>
+                          <input
+                            type="file"
+                            id="aadhar-upload"
+                            accept="image/*,.pdf"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleDocumentUpload('aadhar', file);
+                            }}
+                            className="hidden"
+                          />
+                          <label
+                            htmlFor="aadhar-upload"
+                            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-2xl shadow-sm text-white bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 cursor-pointer transition-all duration-200 transform hover:scale-105"
+                          >
+                            <Upload className="h-5 w-5 mr-2" />
+                            Upload Aadhar Card
+                          </label>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Passport Upload */}
+                    <div className="border-2 border-dashed border-gray-300 rounded-2xl p-6">
+                      <div className="text-center">
+                        <div className="p-4 bg-blue-100 rounded-full w-fit mx-auto mb-4">
+                          <Globe className="h-8 w-8 text-blue-600" />
+                        </div>
+                        <h5 className="font-semibold text-gray-900 mb-2">Upload Passport</h5>
+                        <p className="text-sm text-gray-600 mb-4">Upload the main information page</p>
+                        
+                        {registerData.documents.passport ? (
+                          <div className="bg-green-50 border border-green-200 rounded-2xl p-3 mb-3">
+                            <CheckCircle className="h-5 w-5 text-green-600 mx-auto mb-1" />
+                            <p className="text-green-800 font-medium text-sm">{registerData.documents.passport.name}</p>
+                            <button
+                              type="button"
+                              onClick={() => handleDocumentUpload('passport', undefined)}
+                              className="mt-1 text-red-600 hover:text-red-700 text-xs font-medium"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        ) : (
+                          <div>
+                            <input
+                              type="file"
+                              id="passport-upload"
+                              accept="image/*,.pdf"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleDocumentUpload('passport', file);
+                              }}
+                              className="hidden"
+                            />
+                            <label
+                              htmlFor="passport-upload"
+                              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-2xl shadow-sm text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 cursor-pointer transition-all duration-200"
+                            >
+                              <Upload className="h-4 w-4 mr-2" />
+                              Upload
+                            </label>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Visa Upload */}
+                    <div className="border-2 border-dashed border-gray-300 rounded-2xl p-6">
+                      <div className="text-center">
+                        <div className="p-4 bg-purple-100 rounded-full w-fit mx-auto mb-4">
+                          <FileText className="h-8 w-8 text-purple-600" />
+                        </div>
+                        <h5 className="font-semibold text-gray-900 mb-2">Upload Visa</h5>
+                        <p className="text-sm text-gray-600 mb-4">Upload your valid visa page</p>
+                        
+                        {registerData.documents.visa ? (
+                          <div className="bg-green-50 border border-green-200 rounded-2xl p-3 mb-3">
+                            <CheckCircle className="h-5 w-5 text-green-600 mx-auto mb-1" />
+                            <p className="text-green-800 font-medium text-sm">{registerData.documents.visa.name}</p>
+                            <button
+                              type="button"
+                              onClick={() => handleDocumentUpload('visa', undefined)}
+                              className="mt-1 text-red-600 hover:text-red-700 text-xs font-medium"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        ) : (
+                          <div>
+                            <input
+                              type="file"
+                              id="visa-upload"
+                              accept="image/*,.pdf"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleDocumentUpload('visa', file);
+                              }}
+                              className="hidden"
+                            />
+                            <label
+                              htmlFor="visa-upload"
+                              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-2xl shadow-sm text-white bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 cursor-pointer transition-all duration-200"
+                            >
+                              <Upload className="h-4 w-4 mr-2" />
+                              Upload
+                            </label>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Upload Guidelines */}
+                <div className="mt-4 bg-blue-50 border border-blue-200 rounded-2xl p-4">
+                  <h6 className="font-semibold text-blue-900 mb-2">Upload Guidelines</h6>
+                  <ul className="text-sm text-blue-800 space-y-1">
+                    <li>• Supported formats: JPG, PNG, PDF</li>
+                    <li>• Maximum file size: 10 MB</li>
+                    <li>• Ensure document is clear and all corners are visible</li>
+                    {registerData.userType === 'indian' ? (
+                      <li>• For Aadhar: Both front and back can be uploaded as one file</li>
+                    ) : (
+                      <>
+                        <li>• Passport: Upload the main information page</li>
+                        <li>• Visa: Upload the page with your visa stamp</li>
+                      </>
+                    )}
+                  </ul>
+                </div>
               </div>
 
               {/* Emergency Contact Section */}

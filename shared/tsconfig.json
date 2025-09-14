@@ -9,6 +9,7 @@
     "strict": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+    "composite": true,
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,

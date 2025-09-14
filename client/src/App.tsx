@@ -2,6 +2,7 @@ import React, { useCallback, useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom';
 import { UserPlus, LogIn, Shield, FileText, Map } from 'lucide-react';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { LanguageProvider } from './contexts/LanguageContext';
 import { TouristRegistration } from './components/TouristRegistration';
 import { LoginPage } from './components/LoginPage';
 import { AdminLogin } from './components/AdminLogin';
@@ -504,11 +505,13 @@ function AppContent() {
 
 function App() {
   return (
-    <ThemeProvider>
-      <Router>
-        <AppContent />
-      </Router>
-    </ThemeProvider>
+    <LanguageProvider>
+      <ThemeProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </ThemeProvider>
+    </LanguageProvider>
   );
 }
 

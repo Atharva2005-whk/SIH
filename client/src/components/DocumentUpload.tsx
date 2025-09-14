@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { Upload, File, X, Check, AlertCircle, Eye, Trash2 } from 'lucide-react';
+import { Upload, File, X, Check, AlertCircle, Eye, Trash2, CreditCard, Globe, FileText } from 'lucide-react';
 
 // Local type definitions
 type DocumentType = 'visa' | 'passport' | 'aadhar';
@@ -41,6 +41,25 @@ interface DocumentUploadProps {
   };
   required?: boolean;
   disabled?: boolean;
+}
+
+// Multi-document upload interface for registration form
+export interface MultiDocumentUploadProps {
+  userType: 'indian' | 'foreign';
+  uploadedDocuments: {
+    aadhar?: File;
+    passport?: File;
+    visa?: File;
+  };
+  onDocumentUpload: (type: 'aadhar' | 'passport' | 'visa', file: File) => void;
+  onDocumentRemove: (type: 'aadhar' | 'passport' | 'visa') => void;
+  errors?: {
+    aadhar?: string;
+    passport?: string;
+    visa?: string;
+  };
+  isUploading?: boolean;
+  className?: string;
 }
 
 export function DocumentUpload({
@@ -185,18 +204,36 @@ export function DocumentUpload({
     }
   };
 
+  const getDocumentIcon = (type: DocumentType) => {
+    switch (type) {
+      case 'aadhar':
+        return <CreditCard className="h-6 w-6 text-orange-600" />;
+      case 'passport':
+        return <Globe className="h-6 w-6 text-blue-600" />;
+      case 'visa':
+        return <FileText className="h-6 w-6 text-purple-600" />;
+      default:
+        return <File className="h-6 w-6 text-gray-600" />;
+    }
+  };
+
   return (
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-            {getDocumentTypeName(documentType)}
-            {isRequired && <span className="text-red-500 ml-1">*</span>}
-          </h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            {isRequired ? 'Required document' : 'Optional document'}
-          </p>
+        <div className="flex items-center space-x-3">
+          <div className="p-2 rounded-2xl bg-gray-100">
+            {getDocumentIcon(documentType)}
+          </div>
+          <div>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+              {getDocumentTypeName(documentType)}
+              {isRequired && <span className="text-red-500 ml-1">*</span>}
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {isRequired ? 'Required document' : 'Optional document'}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -368,6 +405,362 @@ export function DocumentUpload({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// Multi-document upload component for registration forms
+export function MultiDocumentUpload({
+  userType,
+  uploadedDocuments,
+  onDocumentUpload,
+  onDocumentRemove,
+  errors = {},
+  isUploading = false,
+  className = ''
+}: MultiDocumentUploadProps) {
+  const [draggedOver, setDraggedOver] = useState<string | null>(null);
+
+  const handleDragOver = useCallback((e: React.DragEvent, docType: string) => {
+    e.preventDefault();
+    setDraggedOver(docType);
+  }, []);
+
+  const handleDragLeave = useCallback(() => {
+    setDraggedOver(null);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent, docType: 'aadhar' | 'passport' | 'visa') => {
+    e.preventDefault();
+    setDraggedOver(null);
+    
+    const file = e.dataTransfer.files[0];
+    if (file && validateMultiFile(file)) {
+      onDocumentUpload(docType, file);
+    }
+  }, [onDocumentUpload]);
+
+  const validateMultiFile = (file: File): boolean => {
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+    
+    if (file.size > maxSize) {
+      alert('File too large. Maximum size is 10MB.');
+      return false;
+    }
+    
+    if (!allowedTypes.includes(file.type)) {
+      alert('Invalid file type. Please select JPG, PNG, or PDF files.');
+      return false;
+    }
+    
+    return true;
+  };
+
+  const getDocumentColors = (docType: string) => {
+    switch (docType) {
+      case 'aadhar':
+        return {
+          bg: 'bg-orange-50',
+          border: 'border-orange-200',
+          iconBg: 'bg-orange-100',
+          icon: 'text-orange-600',
+          button: 'from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800',
+          text: 'text-orange-900'
+        };
+      case 'passport':
+        return {
+          bg: 'bg-blue-50',
+          border: 'border-blue-200',
+          iconBg: 'bg-blue-100',
+          icon: 'text-blue-600',
+          button: 'from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800',
+          text: 'text-blue-900'
+        };
+      case 'visa':
+        return {
+          bg: 'bg-purple-50',
+          border: 'border-purple-200',
+          iconBg: 'bg-purple-100',
+          icon: 'text-purple-600',
+          button: 'from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800',
+          text: 'text-purple-900'
+        };
+      default:
+        return {
+          bg: 'bg-gray-50',
+          border: 'border-gray-200',
+          iconBg: 'bg-gray-100',
+          icon: 'text-gray-600',
+          button: 'from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800',
+          text: 'text-gray-900'
+        };
+    }
+  };
+
+  const DocumentUploadBox = ({ docType, title, description, icon }: {
+    docType: 'aadhar' | 'passport' | 'visa';
+    title: string;
+    description: string;
+    icon: React.ReactNode;
+  }) => {
+    const colors = getDocumentColors(docType);
+    const file = uploadedDocuments[docType];
+    const error = errors[docType];
+    const isDraggedOver = draggedOver === docType;
+
+    return (
+      <div
+        className={`border-2 border-dashed rounded-2xl p-6 transition-all duration-200 ${
+          isDraggedOver
+            ? 'border-purple-400 bg-purple-50'
+            : error
+            ? 'border-red-300 bg-red-50'
+            : file
+            ? 'border-green-300 bg-green-50'
+            : `${colors.border} ${colors.bg}`
+        }`}
+        onDragOver={(e) => handleDragOver(e, docType)}
+        onDragLeave={handleDragLeave}
+        onDrop={(e) => handleDrop(e, docType)}
+      >
+        <div className="text-center">
+          <div className={`p-4 rounded-full w-fit mx-auto mb-4 ${
+            file ? 'bg-green-100' : colors.iconBg
+          }`}>
+            {file ? (
+              <Check className="h-8 w-8 text-green-600" />
+            ) : (
+              icon
+            )}
+          </div>
+          
+          <h5 className={`font-semibold text-lg mb-2 ${
+            file ? 'text-green-900' : colors.text
+          }`}>
+            {title}
+          </h5>
+          
+          <p className={`text-sm mb-4 ${
+            file ? 'text-green-700' : 'text-gray-600'
+          }`}>
+            {file ? `${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)` : description}
+          </p>
+
+          {file ? (
+            <div className="space-y-3">
+              <div className="bg-green-100 border border-green-200 rounded-2xl p-3">
+                <Check className="h-5 w-5 text-green-600 mx-auto mb-1" />
+                <p className="text-green-800 font-medium text-sm">Document uploaded successfully</p>
+              </div>
+              
+              <div className="flex space-x-2">
+                <label className="flex-1 inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-2xl shadow-sm text-white bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 cursor-pointer transition-all duration-200">
+                  <Upload className="h-4 w-4 mr-2" />
+                  Replace
+                  <input
+                    type="file"
+                    accept="image/*,.pdf"
+                    className="hidden"
+                    onChange={(e) => {
+                      const selectedFile = e.target.files?.[0];
+                      if (selectedFile && validateMultiFile(selectedFile)) {
+                        onDocumentUpload(docType, selectedFile);
+                      }
+                    }}
+                    disabled={isUploading}
+                  />
+                </label>
+                
+                <button
+                  type="button"
+                  onClick={() => onDocumentRemove(docType)}
+                  className="px-4 py-2 border border-red-300 text-red-700 rounded-2xl hover:bg-red-50 transition-all duration-200 disabled:opacity-50"
+                  disabled={isUploading}
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <label className={`inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-2xl shadow-sm text-white bg-gradient-to-r ${colors.button} cursor-pointer transition-all duration-200 transform hover:scale-105 disabled:opacity-50`}>
+                {isUploading ? (
+                  <>
+                    <div className="animate-spin -ml-1 mr-3 h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-5 w-5 mr-2" />
+                    Upload {title}
+                  </>
+                )}
+                <input
+                  type="file"
+                  accept="image/*,.pdf"
+                  className="hidden"
+                  onChange={(e) => {
+                    const selectedFile = e.target.files?.[0];
+                    if (selectedFile && validateMultiFile(selectedFile)) {
+                      onDocumentUpload(docType, selectedFile);
+                    }
+                  }}
+                  disabled={isUploading}
+                />
+              </label>
+              
+              <p className="text-xs text-gray-500">
+                Or drag and drop your file here
+              </p>
+            </div>
+          )}
+
+          {error && (
+            <div className="mt-3 p-3 bg-red-100 border border-red-200 rounded-2xl">
+              <div className="flex items-center text-sm text-red-800">
+                <AlertCircle className="h-4 w-4 mr-2 flex-shrink-0" />
+                <span>{error}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const requiredDocuments = userType === 'indian' ? 1 : 2;
+  const uploadedCount = Object.values(uploadedDocuments).filter(Boolean).length;
+
+  return (
+    <div className={`space-y-6 ${className}`}>
+      {/* User Type Info */}
+      <div className={`p-4 rounded-2xl border-2 ${
+        userType === 'indian' 
+          ? 'bg-orange-50 border-orange-200' 
+          : 'bg-blue-50 border-blue-200'
+      }`}>
+        <div className="flex items-center">
+          <div className={`p-3 rounded-2xl mr-4 ${
+            userType === 'indian' ? 'bg-orange-100' : 'bg-blue-100'
+          }`}>
+            {userType === 'indian' ? (
+              <CreditCard className="h-6 w-6 text-orange-600" />
+            ) : (
+              <Globe className="h-6 w-6 text-blue-600" />
+            )}
+          </div>
+          <div>
+            <h3 className={`text-lg font-semibold ${
+              userType === 'indian' ? 'text-orange-900' : 'text-blue-900'
+            }`}>
+              {userType === 'indian' ? 'Indian Citizen' : 'Foreign Visitor'}
+            </h3>
+            <p className={`text-sm ${
+              userType === 'indian' ? 'text-orange-700' : 'text-blue-700'
+            }`}>
+              {userType === 'indian' 
+                ? 'Please upload your Aadhar Card for identity verification'
+                : 'Please upload your Passport and Visa for identity verification'
+              }
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Document Upload Areas */}
+      {userType === 'indian' ? (
+        <DocumentUploadBox 
+          docType="aadhar"
+          title="Aadhar Card"
+          description="Upload a clear photo of your Aadhar card (both sides accepted)"
+          icon={<CreditCard className="h-8 w-8 text-orange-600" />}
+        />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <DocumentUploadBox 
+            docType="passport"
+            title="Passport"
+            description="Upload the main information page of your passport"
+            icon={<Globe className="h-8 w-8 text-blue-600" />}
+          />
+          <DocumentUploadBox 
+            docType="visa"
+            title="Visa"
+            description="Upload the page with your valid visa stamp/sticker"
+            icon={<FileText className="h-8 w-8 text-purple-600" />}
+          />
+        </div>
+      )}
+
+      {/* Upload Guidelines */}
+      <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6">
+        <h4 className="font-semibold text-gray-900 mb-3 flex items-center">
+          <AlertCircle className="h-5 w-5 mr-2" />
+          Upload Guidelines
+        </h4>
+        <ul className="text-sm text-gray-700 space-y-2">
+          <li className="flex items-center">
+            <Check className="h-4 w-4 text-green-600 mr-2 flex-shrink-0" />
+            Supported formats: JPG, PNG, PDF
+          </li>
+          <li className="flex items-center">
+            <Check className="h-4 w-4 text-green-600 mr-2 flex-shrink-0" />
+            Maximum file size: 10 MB
+          </li>
+          <li className="flex items-center">
+            <Check className="h-4 w-4 text-green-600 mr-2 flex-shrink-0" />
+            Ensure document is clear and all corners are visible
+          </li>
+          <li className="flex items-center">
+            <Check className="h-4 w-4 text-green-600 mr-2 flex-shrink-0" />
+            Document should not be blurred or damaged
+          </li>
+          {userType === 'indian' ? (
+            <li className="flex items-center">
+              <Check className="h-4 w-4 text-green-600 mr-2 flex-shrink-0" />
+              For Aadhar: Both front and back can be uploaded as one file
+            </li>
+          ) : (
+            <>
+              <li className="flex items-center">
+                <Check className="h-4 w-4 text-green-600 mr-2 flex-shrink-0" />
+                Passport: Upload the main information page
+              </li>
+              <li className="flex items-center">
+                <Check className="h-4 w-4 text-green-600 mr-2 flex-shrink-0" />
+                Visa: Upload the page with your visa stamp/sticker
+              </li>
+            </>
+          )}
+        </ul>
+      </div>
+
+      {/* Progress Indicator */}
+      <div className="bg-white border border-gray-200 rounded-2xl p-4">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-sm font-medium text-gray-700">
+            Upload Progress
+          </span>
+          <span className="text-sm text-gray-500">
+            {uploadedCount} of {requiredDocuments} completed
+          </span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-2">
+          <div
+            className="bg-gradient-to-r from-purple-600 to-purple-700 h-2 rounded-full transition-all duration-300"
+            style={{ 
+              width: `${(uploadedCount / requiredDocuments) * 100}%` 
+            }}
+          ></div>
+        </div>
+        {uploadedCount === requiredDocuments && (
+          <div className="mt-3 flex items-center text-green-600 text-sm font-medium">
+            <Check className="h-4 w-4 mr-2" />
+            All required documents uploaded!
+          </div>
+        )}
+      </div>
     </div>
   );
 }

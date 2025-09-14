@@ -210,26 +210,42 @@ app.post('/api/auth/logout', async (req, res) => {
  */
 app.post('/api/auth/tourist/register', async (req, res) => {
   try {
-    const { name, passportNumber, nationality, emergencyContact, medicalInfo, password } = req.body;
+    const { 
+      userType, 
+      fullName, 
+      email, 
+      password, 
+      phoneNumber, 
+      emergencyContactName, 
+      emergencyContactNumber, 
+      nationality 
+    } = req.body;
     
-    if (!name || !passportNumber || !nationality || !password) {
+    if (!userType || !fullName || !email || !password || !phoneNumber || !emergencyContactName || !emergencyContactNumber) {
       return res.status(400).json({
         success: false,
-        error: 'Missing required fields: name, passportNumber, nationality, password'
+        error: 'Missing required fields: userType, fullName, email, password, phoneNumber, emergencyContactName, emergencyContactNumber'
       });
     }
     
+    // Determine nationality based on userType if not provided
+    const finalNationality = nationality || (userType === 'indian' ? 'Indian' : 'Foreign');
+    
     const result = await authService.registerTourist({
-      name,
-      passportNumber,
-      nationality,
-      emergencyContact,
-      medicalInfo,
-      password
+      name: fullName,
+      email: email,
+      userType: userType,
+      nationality: finalNationality,
+      phoneNumber: phoneNumber,
+      emergencyContact: `${emergencyContactName} - ${emergencyContactNumber}`,
+      password: password
     });
     
     if (result.success) {
-      res.status(201).json(result);
+      res.status(201).json({
+        ...result,
+        message: 'Registration successful! Please upload your identity documents to complete verification.'
+      });
     } else {
       res.status(400).json(result);
     }
@@ -667,6 +683,108 @@ app.post('/api/alerts/:id/response', async (req, res) => {
  * Upload a document
  * POST /api/documents/upload
  */
+// Multi-document upload endpoint for registration
+app.post('/api/documents/multi-upload', upload.fields([
+  { name: 'aadhar', maxCount: 1 },
+  { name: 'passport', maxCount: 1 },
+  { name: 'visa', maxCount: 1 }
+]), async (req, res) => {
+  try {
+    const { touristId, userType, nationality } = req.body;
+    
+    if (!touristId || !userType) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields: touristId, userType'
+      });
+    }
+
+    const uploadedDocuments = [];
+    const files = req.files;
+
+    // Validate required documents based on user type
+    if (userType === 'indian') {
+      if (!files.aadhar) {
+        return res.status(400).json({
+          success: false,
+          error: 'Aadhar card is required for Indian citizens'
+        });
+      }
+    } else {
+      if (!files.passport || !files.visa) {
+        return res.status(400).json({
+          success: false,
+          error: 'Both passport and visa are required for foreign visitors'
+        });
+      }
+    }
+
+    // Process uploaded files
+    for (const [fieldName, fileArray] of Object.entries(files)) {
+      if (fileArray && fileArray.length > 0) {
+        const file = fileArray[0];
+        const documentRecord = {
+          id: Date.now().toString() + '-' + fieldName,
+          touristId: parseInt(touristId),
+          type: fieldName,
+          userType: userType,
+          nationality: nationality || 'DEFAULT',
+          fileName: file.originalname,
+          filePath: file.path,
+          fileSize: file.size,
+          mimeType: file.mimetype,
+          uploadedAt: new Date().toISOString(),
+          verificationStatus: 'pending',
+          verifiedAt: null,
+          verifiedBy: null,
+          rejectionReason: null
+        };
+        uploadedDocuments.push(documentRecord);
+      }
+    }
+
+    // Store document metadata
+    const documentsFile = path.join(__dirname, 'documents-metadata.json');
+    let documents = [];
+    
+    if (fs.existsSync(documentsFile)) {
+      const data = fs.readFileSync(documentsFile, 'utf8');
+      documents = JSON.parse(data);
+    }
+    
+    // Remove any existing documents of the same types for this tourist
+    const existingTypes = uploadedDocuments.map(doc => doc.type);
+    documents = documents.filter(doc => !(doc.touristId === parseInt(touristId) && existingTypes.includes(doc.type)));
+    documents.push(...uploadedDocuments);
+    
+    fs.writeFileSync(documentsFile, JSON.stringify(documents, null, 2));
+
+    res.status(201).json({
+      success: true,
+      message: `${uploadedDocuments.length} document(s) uploaded successfully`,
+      documents: uploadedDocuments.map(doc => ({
+        id: doc.id,
+        type: doc.type,
+        fileName: doc.fileName,
+        uploadedAt: doc.uploadedAt,
+        verificationStatus: doc.verificationStatus
+      }))
+    });
+  } catch (error) {
+    console.error('Error uploading multiple documents:', error);
+    if (error.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({
+        success: false,
+        error: 'File too large. Maximum size is 10MB per file.'
+      });
+    }
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Internal server error'
+    });
+  }
+});
+
 app.post('/api/documents/upload', upload.single('document'), async (req, res) => {
   try {
     if (!req.file) {

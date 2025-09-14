@@ -7,6 +7,10 @@ interface ThemeContextType {
   theme: Theme;
   setTheme: (theme: Theme) => void;
   resolvedTheme: 'light' | 'dark';
+  isDark: boolean;
+  isLight: boolean;
+  toggleTheme: () => void;
+  systemTheme: 'light' | 'dark';
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -82,11 +86,24 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, [resolvedTheme]);
 
+  // Toggle between light and dark themes
+  const toggleTheme = useCallback(() => {
+    if (theme === 'system') {
+      setTheme(systemTheme === 'dark' ? 'light' : 'dark');
+    } else {
+      setTheme(theme === 'light' ? 'dark' : 'light');
+    }
+  }, [theme, systemTheme, setTheme]);
+
   const value: ThemeContextType = useMemo(() => ({
     theme,
     setTheme,
     resolvedTheme,
-  }), [theme, setTheme, resolvedTheme]);
+    isDark: resolvedTheme === 'dark',
+    isLight: resolvedTheme === 'light',
+    toggleTheme,
+    systemTheme,
+  }), [theme, setTheme, resolvedTheme, toggleTheme, systemTheme]);
 
   return (
     <ThemeContext.Provider value={value}>

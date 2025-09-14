@@ -12,7 +12,10 @@ import {
   Eye,
   EyeOff,
   UserPlus,
-  ArrowLeft
+  ArrowLeft,
+  Upload,
+  FileText,
+  CheckCircle
 } from 'lucide-react';
 
 interface RegisterProps {
@@ -30,6 +33,11 @@ interface RegisterCredentials {
   emergencyContactName: string;
   emergencyContactNumber: string;
   agreeToTerms: boolean;
+  documents: {
+    aadhar?: File;
+    passport?: File;
+    visa?: File;
+  };
 }
 
 export function Register({ onRegister, onSwitchToLogin }: RegisterProps) {
@@ -42,7 +50,8 @@ export function Register({ onRegister, onSwitchToLogin }: RegisterProps) {
     phoneNumber: '',
     emergencyContactName: '',
     emergencyContactNumber: '',
-    agreeToTerms: false
+    agreeToTerms: false,
+    documents: {}
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -50,7 +59,18 @@ export function Register({ onRegister, onSwitchToLogin }: RegisterProps) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleUserTypeChange = useCallback((type: 'indian' | 'foreign') => {
-    setFormData(prev => ({ ...prev, userType: type }));
+    setFormData(prev => ({ ...prev, userType: type, documents: {} }));
+    setError('');
+  }, []);
+
+  const handleDocumentUpload = useCallback((docType: 'aadhar' | 'passport' | 'visa', file: File) => {
+    setFormData(prev => ({
+      ...prev,
+      documents: {
+        ...prev.documents,
+        [docType]: file
+      }
+    }));
     setError('');
   }, []);
 
@@ -98,6 +118,20 @@ export function Register({ onRegister, onSwitchToLogin }: RegisterProps) {
       }
       if (!formData.agreeToTerms) {
         throw new Error('Please agree to the Terms of Service and Privacy Policy');
+      }
+
+      // Document validation
+      if (formData.userType === 'indian') {
+        if (!formData.documents.aadhar) {
+          throw new Error('Please upload your Aadhar Card');
+        }
+      } else {
+        if (!formData.documents.passport) {
+          throw new Error('Please upload your Passport');
+        }
+        if (!formData.documents.visa) {
+          throw new Error('Please upload your Visa');
+        }
       }
 
       await onRegister(formData);
@@ -312,6 +346,173 @@ export function Register({ onRegister, onSwitchToLogin }: RegisterProps) {
                   placeholder="Enter phone number"
                   required
                 />
+              </div>
+            </div>
+
+            {/* Document Upload Section */}
+            <div>
+              <div className="flex items-center mb-4">
+                <div className="p-2 rounded-full bg-gray-100 mr-3">
+                  <FileText className="h-5 w-5 text-gray-600" />
+                </div>
+                <h4 className="font-semibold text-gray-900">Identity Verification</h4>
+              </div>
+              
+              {formData.userType === 'indian' ? (
+                <div className="border-2 border-dashed border-gray-300 rounded-2xl p-6">
+                  <div className="text-center">
+                    <div className="p-4 bg-orange-100 rounded-full w-fit mx-auto mb-4">
+                      <CreditCard className="h-8 w-8 text-orange-600" />
+                    </div>
+                    <h5 className="font-semibold text-gray-900 mb-2">Upload Aadhar Card</h5>
+                    <p className="text-sm text-gray-600 mb-4">Upload a clear photo of your Aadhar card (both sides accepted)</p>
+                    
+                    {formData.documents.aadhar ? (
+                      <div className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-4">
+                        <CheckCircle className="h-6 w-6 text-green-600 mx-auto mb-2" />
+                        <p className="text-green-800 font-medium">{formData.documents.aadhar.name}</p>
+                        <p className="text-green-600 text-sm">{(formData.documents.aadhar.size / 1024 / 1024).toFixed(2)} MB</p>
+                        <button
+                          type="button"
+                          onClick={() => handleDocumentUpload('aadhar', undefined as any)}
+                          className="mt-2 text-red-600 hover:text-red-700 text-sm font-medium"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ) : (
+                      <div>
+                        <input
+                          type="file"
+                          id="aadhar-upload"
+                          accept="image/*,.pdf"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleDocumentUpload('aadhar', file);
+                          }}
+                          className="hidden"
+                        />
+                        <label
+                          htmlFor="aadhar-upload"
+                          className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-2xl shadow-sm text-white bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 cursor-pointer transition-all duration-200 transform hover:scale-105"
+                        >
+                          <Upload className="h-5 w-5 mr-2" />
+                          Upload Aadhar Card
+                        </label>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Passport Upload */}
+                  <div className="border-2 border-dashed border-gray-300 rounded-2xl p-6">
+                    <div className="text-center">
+                      <div className="p-4 bg-blue-100 rounded-full w-fit mx-auto mb-4">
+                        <Globe className="h-8 w-8 text-blue-600" />
+                      </div>
+                      <h5 className="font-semibold text-gray-900 mb-2">Upload Passport</h5>
+                      <p className="text-sm text-gray-600 mb-4">Upload the main information page</p>
+                      
+                      {formData.documents.passport ? (
+                        <div className="bg-green-50 border border-green-200 rounded-2xl p-3 mb-3">
+                          <CheckCircle className="h-5 w-5 text-green-600 mx-auto mb-1" />
+                          <p className="text-green-800 font-medium text-sm">{formData.documents.passport.name}</p>
+                          <button
+                            type="button"
+                            onClick={() => setFormData(prev => ({ ...prev, documents: { ...prev.documents, passport: undefined } }))}
+                            className="mt-1 text-red-600 hover:text-red-700 text-xs font-medium"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ) : (
+                        <div>
+                          <input
+                            type="file"
+                            id="passport-upload"
+                            accept="image/*,.pdf"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleDocumentUpload('passport', file);
+                            }}
+                            className="hidden"
+                          />
+                          <label
+                            htmlFor="passport-upload"
+                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-2xl shadow-sm text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 cursor-pointer transition-all duration-200"
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload
+                          </label>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Visa Upload */}
+                  <div className="border-2 border-dashed border-gray-300 rounded-2xl p-6">
+                    <div className="text-center">
+                      <div className="p-4 bg-purple-100 rounded-full w-fit mx-auto mb-4">
+                        <FileText className="h-8 w-8 text-purple-600" />
+                      </div>
+                      <h5 className="font-semibold text-gray-900 mb-2">Upload Visa</h5>
+                      <p className="text-sm text-gray-600 mb-4">Upload your valid visa page</p>
+                      
+                      {formData.documents.visa ? (
+                        <div className="bg-green-50 border border-green-200 rounded-2xl p-3 mb-3">
+                          <CheckCircle className="h-5 w-5 text-green-600 mx-auto mb-1" />
+                          <p className="text-green-800 font-medium text-sm">{formData.documents.visa.name}</p>
+                          <button
+                            type="button"
+                            onClick={() => setFormData(prev => ({ ...prev, documents: { ...prev.documents, visa: undefined } }))}
+                            className="mt-1 text-red-600 hover:text-red-700 text-xs font-medium"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ) : (
+                        <div>
+                          <input
+                            type="file"
+                            id="visa-upload"
+                            accept="image/*,.pdf"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleDocumentUpload('visa', file);
+                            }}
+                            className="hidden"
+                          />
+                          <label
+                            htmlFor="visa-upload"
+                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-2xl shadow-sm text-white bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 cursor-pointer transition-all duration-200"
+                          >
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload
+                          </label>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Upload Guidelines */}
+              <div className="mt-4 bg-blue-50 border border-blue-200 rounded-2xl p-4">
+                <h6 className="font-semibold text-blue-900 mb-2">Upload Guidelines</h6>
+                <ul className="text-sm text-blue-800 space-y-1">
+                  <li>• Supported formats: JPG, PNG, PDF</li>
+                  <li>• Maximum file size: 10 MB</li>
+                  <li>• Ensure document is clear and all corners are visible</li>
+                  {formData.userType === 'indian' ? (
+                    <li>• For Aadhar: Both front and back can be uploaded as one file</li>
+                  ) : (
+                    <>
+                      <li>• Passport: Upload the main information page</li>
+                      <li>• Visa: Upload the page with your visa stamp</li>
+                    </>
+                  )}
+                </ul>
               </div>
             </div>
 
