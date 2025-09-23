@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback, ReactNode } from 'react';
 import { 
   Settings, 
   Moon, 
@@ -16,11 +16,299 @@ import {
   Mail,
   MapPin
 } from 'lucide-react';
-import { useTheme } from '../contexts/ThemeContext';
-import { useLanguage, LANGUAGES, SupportedLanguage } from '../contexts/LanguageContext';
+
+// ===== LANGUAGE CONTEXT =====
+// Supported languages
+export type SupportedLanguage = 'en' | 'hi' | 'es' | 'fr';
+
+export interface LanguageContextType {
+  currentLanguage: SupportedLanguage;
+  setLanguage: (language: SupportedLanguage) => void;
+  t: (key: string, params?: Record<string, string | number>) => string;
+  isLoading: boolean;
+}
+
+const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+
+// Translation type  
+type Translations = Record<string, any>;
+
+// Language configuration
+export const LANGUAGES = {
+  en: { name: 'English', nativeName: 'English' },
+  hi: { name: 'Hindi', nativeName: 'हिन्दी' },
+  es: { name: 'Spanish', nativeName: 'Español' },
+  fr: { name: 'French', nativeName: 'Français' }
+};
+
+interface LanguageProviderProps {
+  children: ReactNode;
+}
+
+export function LanguageProvider({ children }: LanguageProviderProps) {
+  const [currentLanguage, setCurrentLanguage] = useState<SupportedLanguage>('en');
+  const [translations, setTranslations] = useState<Translations>({});
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load translations for a specific language
+  const loadTranslations = async (language: SupportedLanguage): Promise<Translations> => {
+    try {
+      const response = await import(`../translations/${language}.json`);
+      return response.default;
+    } catch (error) {
+      console.warn(`Failed to load translations for ${language}, falling back to English`);
+      try {
+        const fallback = await import('../translations/en.json');
+        return fallback.default;
+      } catch (fallbackError) {
+        console.error('Failed to load fallback translations');
+        return {};
+      }
+    }
+  };
+
+  // Initialize language from localStorage or browser preference
+  useEffect(() => {
+    const initializeLanguage = async () => {
+      setIsLoading(true);
+      
+      // Get saved language from localStorage
+      const savedLanguage = localStorage.getItem('preferred-language') as SupportedLanguage;
+      
+      // Get browser language
+      const browserLanguage = navigator.language.split('-')[0] as SupportedLanguage;
+      
+      // Determine initial language
+      const initialLanguage = 
+        savedLanguage && Object.keys(LANGUAGES).includes(savedLanguage) 
+          ? savedLanguage 
+          : Object.keys(LANGUAGES).includes(browserLanguage) 
+            ? browserLanguage 
+            : 'en';
+
+      setCurrentLanguage(initialLanguage);
+      
+      // Load translations
+      const newTranslations = await loadTranslations(initialLanguage);
+      setTranslations(newTranslations);
+      setIsLoading(false);
+    };
+
+    initializeLanguage();
+  }, []);
+
+  // Change language
+  const setLanguage = async (language: SupportedLanguage) => {
+    if (language === currentLanguage) return;
+    
+    setIsLoading(true);
+    
+    try {
+      const newTranslations = await loadTranslations(language);
+      setTranslations(newTranslations);
+      setCurrentLanguage(language);
+      
+      // Save to localStorage
+      localStorage.setItem('preferred-language', language);
+      
+      // Update document language attribute
+      document.documentElement.lang = language;
+    } catch (error) {
+      console.error('Failed to change language:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Translation function
+  const t = (key: string, params?: Record<string, string | number>): string => {
+    // Handle nested keys like 'dashboard.title'
+    const keys = key.split('.');
+    let translation: any = translations;
+    
+    for (const k of keys) {
+      if (translation && typeof translation === 'object') {
+        translation = translation[k];
+      } else {
+        translation = undefined;
+        break;
+      }
+    }
+    
+    // Return key if translation not found
+    if (typeof translation !== 'string') {
+      console.warn(`Translation missing for key: ${key}`);
+      return key;
+    }
+
+    // Replace parameters in translation
+    if (params) {
+      Object.entries(params).forEach(([paramKey, paramValue]) => {
+        translation = translation.replace(
+          new RegExp(`{{${paramKey}}}`, 'g'), 
+          String(paramValue)
+        );
+      });
+    }
+
+    return translation;
+  };
+
+  const value: LanguageContextType = {
+    currentLanguage,
+    setLanguage,
+    t,
+    isLoading
+  };
+
+  return (
+    <LanguageContext.Provider value={value}>
+      {children}
+    </LanguageContext.Provider>
+  );
+}
+
+// Hook to use language context
+export function useLanguage(): LanguageContextType {
+  const context = useContext(LanguageContext);
+  if (context === undefined) {
+    throw new Error('useLanguage must be used within a LanguageProvider');
+  }
+  return context;
+}
+
+// HOC for class components (if needed)
+export function withLanguage<P extends object>(
+  Component: React.ComponentType<P & { language: LanguageContextType }>
+) {
+  return function LanguageComponent(props: P) {
+    const language = useLanguage();
+    return <Component {...props} language={language} />;
+  };
+}
+
+// ===== THEME CONTEXT =====
+// Local type definition
+type Theme = 'light' | 'dark' | 'system';
+
+interface ThemeContextType {
+  theme: Theme;
+  setTheme: (theme: Theme) => void;
+  resolvedTheme: 'light' | 'dark';
+  isDark: boolean;
+  isLight: boolean;
+  toggleTheme: () => void;
+  systemTheme: 'light' | 'dark';
+}
+
+const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+
+const STORAGE_KEY = 'tourist-safety-theme';
+
+// Get system theme preference
+const getSystemTheme = (): 'light' | 'dark' => {
+  if (typeof window !== 'undefined' && window.matchMedia) {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  return 'light';
+};
+
+// Get stored theme or default to system
+const getStoredTheme = (): Theme => {
+  if (typeof window !== 'undefined') {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored && ['light', 'dark', 'system'].includes(stored)) {
+      return stored as Theme;
+    }
+  }
+  return 'system';
+};
+
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const [theme, setThemeState] = useState<Theme>(getStoredTheme);
+  const [systemTheme, setSystemTheme] = useState<'light' | 'dark'>(getSystemTheme);
+
+  // Resolve the actual theme to apply
+  const resolvedTheme: 'light' | 'dark' = theme === 'system' ? systemTheme : theme;
+
+  // Update theme and persist to localStorage
+  const setTheme = useCallback((newTheme: Theme) => {
+    setThemeState(newTheme);
+    localStorage.setItem(STORAGE_KEY, newTheme);
+  }, []);
+
+  // Listen for system theme changes
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    
+    const handleChange = (e: MediaQueryListEvent) => {
+      setSystemTheme(e.matches ? 'dark' : 'light');
+    };
+
+    // Modern browsers
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
+    }
+    // Legacy browsers
+    else if (mediaQuery.addListener) {
+      mediaQuery.addListener(handleChange);
+      return () => mediaQuery.removeListener(handleChange);
+    }
+  }, []);
+
+  // Apply theme to document
+  useEffect(() => {
+    const root = window.document.documentElement;
+    
+    // Remove previous theme classes
+    root.classList.remove('light', 'dark');
+    
+    // Add current theme class
+    root.classList.add(resolvedTheme);
+    
+    // Update meta theme-color for mobile browsers
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute('content', resolvedTheme === 'dark' ? '#0f172a' : '#ffffff');
+    }
+  }, [resolvedTheme]);
+
+  // Toggle between light and dark themes
+  const toggleTheme = useCallback(() => {
+    if (theme === 'system') {
+      setTheme(systemTheme === 'dark' ? 'light' : 'dark');
+    } else {
+      setTheme(theme === 'light' ? 'dark' : 'light');
+    }
+  }, [theme, systemTheme, setTheme]);
+
+  const value: ThemeContextType = useMemo(() => ({
+    theme,
+    setTheme,
+    resolvedTheme,
+    isDark: resolvedTheme === 'dark',
+    isLight: resolvedTheme === 'light',
+    toggleTheme,
+    systemTheme,
+  }), [theme, setTheme, resolvedTheme, toggleTheme, systemTheme]);
+
+  return (
+    <ThemeContext.Provider value={value}>
+      {children}
+    </ThemeContext.Provider>
+  );
+}
+
+export function useTheme() {
+  const context = useContext(ThemeContext);
+  if (context === undefined) {
+    throw new Error('useTheme must be used within a ThemeProvider');
+  }
+  return context;
+}
 
 // Local type definitions
-type Theme = 'light' | 'dark' | 'system';
 
 interface NotificationPreference {
   type: string;
@@ -325,7 +613,7 @@ export function SettingsPage({
                           {NOTIFICATION_TYPE_LABELS[pref.type]}
                         </h4>
                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                          Methods: {pref.methods.join(', ')}
+                          Methods: {pref.methods?.join(', ') || 'Not specified'}
                         </p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
