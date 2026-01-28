@@ -42,87 +42,7 @@ An **efficient and scalable monorepo** built on blockchain technology, designed 
 -  **Evidence Management** - IPFS-based evidence storage with blockchain verification
 -  **Smart Document Validation** - Conditional document requirements based on nationality
 
-## 🚀 **Quick Start**
-
-### Prerequisites
-
-- **Node.js** (v18 or higher) - [Download](https://nodejs.org/)
-- **npm** (v9 or higher) - Comes with Node.js
-- **Git** - [Download](https://git-scm.com/)
-- **Make** (optional) - For using Makefile commands
-
-### 💫 **One-Command Setup**
-
-```bash
-# Clone the repository
-git clone <repository-url>
-cd smart-tourist-safety-system
-
-# 🚀 Start everything with one command!
-make start
-# OR use npm directly: npm run dev
-```
-
-That's it! The system will:
-- Install all dependencies
-- Build shared modules
-- Compile smart contracts
-- Start local blockchain
-- Deploy contracts
-- Start backend API
-- Start frontend development server
-
-### 🔧 **Manual Setup** 
-
-1. **Clone and setup**
-   ```bash
-   git clone <repository-url>
-   cd smart-tourist-safety-system
-   cp .env.example .env  # Edit with your configuration
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install  # Installs for all workspaces
-   ```
-
-3. **Build shared components**
-   ```bash
-   npm run build --workspace=shared
-   ```
-
-4. **Start development (choose one)**
-
-   **Option A: Using Scripts (Recommended)**
-   ```bash
-   # Windows
-   .\scripts\deploy-dev.ps1
-   
-   # Linux/Mac
-   ./scripts/deploy-dev.sh
-   ```
-
-   **Option B: Using Makefile**
-   ```bash
-   make dev
-   ```
-
-   **Option C: Manual**
-   ```bash
-   # Terminal 1: Start blockchain
-   npm run node
-   
-   # Terminal 2: Deploy contracts
-   npm run deploy:local
-   
-   # Terminal 3: Start backend
-   npm run dev --workspace=backend
-   
-   # Terminal 4: Start frontend
-   npm run dev --workspace=client
-   ```
-
-## 📋 Smart Contracts
+## Smart Contracts
 
 ### TouristDigitalID Contract
 
@@ -187,117 +107,7 @@ That's it! The system will:
 - `GET /api/status` - Get system status
 - `GET /api/health` - Health check
 
-## 📊 Usage Examples
-
-### Register a Tourist
-
-```javascript
-const response = await fetch('/api/tourists', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    name: 'John Doe',
-    passportNumber: 'P123456789',
-    nationality: 'USA',
-    emergencyContact: '+1-555-0123',
-    medicalInfo: 'No known allergies'
-  })
-});
-
-const result = await response.json();
-console.log('Tourist ID:', result.touristId);
-```
-
-### Report an Incident
-
-```javascript
-const response = await fetch('/api/incidents', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    touristId: 1,
-    incidentType: 'theft',
-    description: 'Wallet stolen at tourist site',
-    location: 'Central Park, New York',
-    severity: 'medium',
-    evidenceHashes: ['QmHash1', 'QmHash2']
-  })
-});
-```
-
-### Create Safety Zone
-
-```javascript
-const response = await fetch('/api/zones', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    name: 'Tourist Safe Zone',
-    description: 'Main tourist area with high security',
-    centerLatitude: 40.7589,
-    centerLongitude: -73.9851,
-    radius: 1000,
-    zoneType: 'safe'
-  })
-});
-```
-
-### Trigger Safety Alert
-
-```javascript
-const response = await fetch('/api/alerts', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    touristId: 1,
-    alertType: 'emergency',
-    message: 'Tourist needs immediate assistance',
-    location: 'Central Park, New York',
-    severity: 'high'
-  })
-});
-```
-
-## 🧪 Testing
-
-### Run All Tests
-```bash
-npm test
-```
-
-### Run Specific Test Files
-```bash
-npx hardhat test test/TouristDigitalID.test.js
-npx hardhat test test/GeoFencingSafety.test.js
-```
-
-### Test Coverage
-```bash
-npx hardhat coverage
-```
-
-## 🚀 Deployment
-
-### Local Development
-```bash
-# Start local blockchain
-npm run node
-
-# Deploy contracts
-npm run deploy:local
-```
-
-### Testnet Deployment (Sepolia)
-```bash
-npm run deploy -- --network sepolia
-```
-
-### Mainnet Deployment
-```bash
-npm run deploy -- --network polygon
-```
-
-## 🌍 Multi-Language & Theme Features
+## Multi-Language & Theme Features
 
 ### Language Support
 - **4 Languages**: English, Hindi (हिन्दी), Spanish (Español), French (Français)
@@ -321,7 +131,7 @@ npm run deploy -- --network polygon
 - **Preview & Remove**: Users can preview and remove uploaded documents
 - **Drag & Drop**: Intuitive file upload experience
 
-## 🔍 Security Features
+## Security Features
 
 - **Access Control**: Role-based permissions for authorities and responders
 - **Data Integrity**: All data stored on blockchain with cryptographic verification
@@ -329,13 +139,13 @@ npm run deploy -- --network polygon
 - **Privacy Protection**: Sensitive data encryption and secure key management
 - **Audit Trail**: Complete transaction history for compliance and investigation
 
-## 🌐 Network Support
+## Network Support
 
 - **Local Development**: Hardhat Network
 - **Testnets**: Sepolia, Mumbai
 - **Mainnets**: Ethereum, Polygon
 
-## 📈 Monitoring & Analytics
+## Monitoring & Analytics
 
 - Real-time location tracking
 - Incident trend analysis
@@ -343,7 +153,7 @@ npm run deploy -- --network polygon
 - Safety zone effectiveness
 - Tourist flow patterns
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch
@@ -351,18 +161,15 @@ npm run deploy -- --network polygon
 4. Add tests for new functionality
 5. Submit a pull request
 
-## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🆘 Support
+## Support
 
 For support and questions:
 - Create an issue in the repository
 - Contact the development team
 - Check the documentation
 
-## 🔮 Future Enhancements
+## Future Enhancements
 
 - AI-powered risk assessment
 - Mobile app integration
@@ -377,5 +184,5 @@ For support and questions:
 
 ---
 
-**Built with ❤️ for tourist safety and security**
+**Built for tourist safety and security**
 
