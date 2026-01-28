@@ -6,20 +6,20 @@
 [![React](https://img.shields.io/badge/React-18.3.1-blue)](https://reactjs.org/)
 [![Hardhat](https://img.shields.io/badge/Hardhat-2.19.0-yellow)](https://hardhat.org/)
 
-A comprehensive, **optimized monorepo** blockchain-based system for monitoring tourist safety, managing digital identities, and responding to incidents using AI, Geo-Fencing, and Blockchain technology.
+An **efficient and scalable monorepo** built on blockchain technology, designed to enhance tourist safety by enabling real-time monitoring, secure digital identity management, and rapid incident response. The system integrates AI-driven analytics, geo-fencing, and blockchain infrastructure to ensure reliability, transparency, and proactive safety management.
 
 ## 🎯 **Recent Optimizations & New Features**
 
-✅ **Monorepo Architecture** - Unified workspace with shared dependencies  
-✅ **TypeScript Integration** - Full type safety across all components  
-✅ **Multi-Language Support** - English, Hindi, Spanish, and French with dynamic loading  
-✅ **Dark Mode Theme** - System preference detection with manual toggle  
-✅ **Enhanced Document Upload** - Conditional uploads (Aadhar for Indians, Passport/Visa for foreigners)  
-✅ **Optimized Dependencies** - Eliminated duplicates and updated versions  
-✅ **Shared Service Layer** - Reusable blockchain service for frontend and backend  
-✅ **Standardized Configuration** - Consistent ESLint, Prettier, and TypeScript configs  
-✅ **Automated Scripts** - Cross-platform deployment and management scripts  
-✅ **Docker Support** - Containerized development and production environments
+ **Monorepo Architecture** - Unified workspace with shared dependencies  
+ **TypeScript Integration** - Full type safety across all components  
+ **Multi-Language Support** - English, Hindi, Spanish, and French with dynamic loading  
+ **Dark Mode Theme** - System preference detection with manual toggle  
+ **Enhanced Document Upload** - Conditional uploads (Aadhar for Indians, Passport/Visa for foreigners)  
+ **Optimized Dependencies** - Eliminated duplicates and updated versions  
+ **Shared Service Layer** - Reusable blockchain service for frontend and backend  
+ **Standardized Configuration** - Consistent ESLint, Prettier, and TypeScript configs  
+ **Automated Scripts** - Cross-platform deployment and management scripts  
+ **Docker Support** - Containerized development and production environments
 
 ## 🏗️ System Architecture
 
@@ -32,15 +32,15 @@ A comprehensive, **optimized monorepo** blockchain-based system for monitoring t
 
 ### Key Features
 
-- ✅ **Digital Identity Management** - Secure tourist registration and verification with document upload
-- ✅ **Multi-Language Interface** - Support for English, Hindi, Spanish, and French
-- ✅ **Responsive Design** - Dark/Light mode with system preference detection
-- ✅ **Incident Reporting** - Blockchain-based incident tracking with evidence
-- ✅ **Geo-Fencing** - Real-time location monitoring with safety zones
-- ✅ **Emergency Response** - Automated alert system with response tracking
-- ✅ **Safety Checkpoints** - Authority-managed safety verification points
-- ✅ **Evidence Management** - IPFS-based evidence storage with blockchain verification
-- ✅ **Smart Document Validation** - Conditional document requirements based on nationality
+-  **Digital Identity Management** - Secure tourist registration and verification with document upload
+-  **Multi-Language Interface** - Support for English, Hindi, Spanish, and French
+-  **Responsive Design** - Dark/Light mode with system preference detection
+-  **Incident Reporting** - Blockchain-based incident tracking with evidence
+-  **Geo-Fencing** - Real-time location monitoring with safety zones
+-  **Emergency Response** - Automated alert system with response tracking
+-  **Safety Checkpoints** - Authority-managed safety verification points
+-  **Evidence Management** - IPFS-based evidence storage with blockchain verification
+-  **Smart Document Validation** - Conditional document requirements based on nationality
 
 ## 🚀 **Quick Start**
 
@@ -51,7 +51,7 @@ A comprehensive, **optimized monorepo** blockchain-based system for monitoring t
 - **Git** - [Download](https://git-scm.com/)
 - **Make** (optional) - For using Makefile commands
 
-### 💫 **One-Command Setup** (Recommended)
+### 💫 **One-Command Setup**
 
 ```bash
 # Clone the repository
@@ -72,7 +72,7 @@ That's it! The system will:
 - Start backend API
 - Start frontend development server
 
-### 🔧 **Manual Setup** (Step by Step)
+### 🔧 **Manual Setup** 
 
 1. **Clone and setup**
    ```bash
